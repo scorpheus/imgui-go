@@ -192,6 +192,11 @@ void iggLabelText(char const *label, char const *text)
    ImGui::LabelText(label, "%s", text);
 }
 
+IggBool iggInputText(char const *label, char *text, int text_size)
+{
+   return ImGui::InputText(label, text, text_size) ? 1 : 0;
+}
+
 IggBool iggButton(char const *label, IggVec2 const *size)
 {
    Vec2Wrapper sizeArg(size);

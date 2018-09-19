@@ -1,7 +1,10 @@
 package imgui
 
 // #include "imguiWrapper.h"
-import "C"
+import (
+	"C"
+)
+import "strings"
 
 // User fill ImGuiIO.KeyMap[] array with indices into the ImGuiIO.KeysDown[512] array
 const (
@@ -266,6 +269,17 @@ func LabelText(label, text string) {
 	textArg, textFin := wrapString(text)
 	defer textFin()
 	C.iggLabelText(labelArg, textArg)
+}
+
+// InputText
+func InputText(label, text string) (bool, string) {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	out := text + "\000" + strings.Repeat(" ", 512-len(text))
+	textArg, textFin := wrapString(out)
+	defer textFin()
+	return_val := C.iggInputText(labelArg, textArg, C.int(512))
+	return return_val != 0, C.GoString(textArg)
 }
 
 // ButtonV returning true if it is pressed.
