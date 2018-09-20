@@ -393,7 +393,51 @@ void iggCloseCurrentPopup(void)
    ImGui::CloseCurrentPopup();
 }
 
+void iggColumns(int count, const char* id, IggBool border)
+{
+   ImGui::Columns(count, id, border != 0);
+}
+
+void iggNextColumn()
+{
+   ImGui::NextColumn();
+}
+
+int iggGetColumnIndex()
+{
+   return ImGui::GetColumnIndex();
+}
+
+float iggGetColumnWidth(int column_index)
+{
+   return ImGui::GetColumnWidth(column_index);
+}
+
+void iggSetColumnWidth(int column_index, float width)
+{
+   ImGui::SetColumnWidth(column_index, width);
+}
+
+float iggGetColumnOffset(int column_index)
+{
+   return ImGui::GetColumnOffset(column_index);
+}
+
+void iggSetColumnOffset(int column_index, float offset_x)
+{
+   ImGui::SetColumnOffset(column_index, offset_x);
+}
+
+int iggGetColumnsCount()
+{
+    return ImGui::GetColumnsCount();
+}
+
 IggBool iggIsItemHovered(int flags)
 {
    return ImGui::IsItemHovered(flags) ? 1 : 0;
+}
+ void iggSetItemAllowOverlap()
+{
+   ImGui::SetItemAllowOverlap();
 }

@@ -591,6 +591,53 @@ func CloseCurrentPopup() {
 	C.iggCloseCurrentPopup()
 }
 
+// ColumnsV You can also use SameLine(pos_x) for simplified columns. The columns API is still work-in-progress and rather lacking.
+func ColumnsV(count int, id string, border bool) {
+	idArg, idFin := wrapString(id)
+	defer idFin()
+	C.iggColumns(C.int(count), idArg, castBool(border))
+}
+
+// Columns calls ColumnsV(count, "", true)
+func Columns(count int) {
+	ColumnsV(count, "", true)
+}
+
+// NextColumn next column, defaults to current row or next row if the current row is finished
+func NextColumn() {
+	C.iggNextColumn()
+}
+
+// GetColumnIndex get current column index
+func GetColumnIndex() int {
+	return int(C.iggGetColumnIndex())
+}
+
+// GetColumnWidth get column width (in pixels). pass -1 to use current column
+func GetColumnWidth(columnIndex int) float32 {
+	return float32(C.iggGetColumnWidth(C.int(columnIndex)))
+}
+
+// SetColumnWidthnset column width (in pixels). pass -1 to use current column
+func SetColumnWidth(columnIndex int, width float32) {
+	C.iggSetColumnWidth(C.int(columnIndex), C.float(width))
+}
+
+// GetColumnOffset get position of column line (in pixels, from the left side of the contents region). pass -1 to use current column, otherwise 0..GetColumnsCount() inclusive. column 0 is typically 0.0f
+func GetColumnOffset(columnIndex int) float32 {
+	return float32(C.iggGetColumnOffset(C.int(columnIndex)))
+}
+
+// SetColumnOffset set position of column line (in pixels, from the left side of the contents region). pass -1 to use current column
+func SetColumnOffset(columnIndex int, offsetX float32) {
+	C.iggSetColumnOffset(C.int(columnIndex), C.float(offsetX))
+}
+
+// GetColumnsCount get the column count
+func GetColumnsCount() int {
+	return int(C.iggGetColumnsCount())
+}
+
 // IsItemHoveredV returns true if the last item is hovered.
 // (and usable, aka not blocked by a popup, etc.). See HoveredFlags for more options.
 func IsItemHoveredV(flags int) bool {
@@ -600,4 +647,9 @@ func IsItemHoveredV(flags int) bool {
 // IsItemHovered calls IsItemHoveredV(HoveredFlagsDefault)
 func IsItemHovered() bool {
 	return IsItemHoveredV(HoveredFlagsDefault)
+}
+
+// SetItemAllowOverlap allow last item to be overlapped by a subsequent item. sometimes useful with invisible buttons, selectables, etc. to catch unused area.
+func SetItemAllowOverlap() {
+	C.iggSetItemAllowOverlap()
 }

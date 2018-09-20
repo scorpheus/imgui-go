@@ -102,7 +102,18 @@ extern IggBool iggBeginPopupContextItem(char const *label, int mouseButton);
 extern void iggEndPopup(void);
 extern void iggCloseCurrentPopup(void);
 
+extern void iggColumns(int count, const char* id, IggBool border);
+extern void iggNextColumn();
+extern int iggGetColumnIndex();
+extern float iggGetColumnWidth(int column_index);
+extern void iggSetColumnWidth(int column_index, float width);
+extern float iggGetColumnOffset(int column_index);
+extern void iggSetColumnOffset(int column_index, float offset_x);
+extern int iggGetColumnsCount();
+
 extern IggBool  iggIsItemHovered(int flags);
+extern void iggSetItemAllowOverlap();
+
 
 #ifdef __cplusplus
 }
