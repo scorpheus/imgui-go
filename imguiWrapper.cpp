@@ -105,6 +105,19 @@ void iggSetNextWindowSize(IggVec2 const *size, int cond)
    ImGui::SetNextWindowSize(*sizeArg, cond);
 }
 
+void iggSetNextWindowSizeConstraints(const IggVec2* size_min, const IggVec2* size_max)
+{
+   Vec2Wrapper sizeMinArg(size_min);
+   Vec2Wrapper sizeMaxArg(size_max);
+   ImGui::SetNextWindowSizeConstraints(*sizeMinArg, *sizeMaxArg);
+}
+
+void iggSetNextWindowContentSize(IggVec2 const *size)
+{
+   Vec2Wrapper sizeArg(size);
+   ImGui::SetNextWindowContentSize(*sizeArg);
+}
+
 void iggSetNextWindowFocus(void)
 {
    ImGui::SetNextWindowFocus();
