@@ -123,6 +123,13 @@ extern float iggGetColumnOffset(int column_index);
 extern void iggSetColumnOffset(int column_index, float offset_x);
 extern int iggGetColumnsCount();
 
+extern IggBool iggBeginDragDropSource(int flags);
+extern IggBool iggSetDragDropPayload(const char* type, const char* data, int size);
+extern void iggEndDragDropSource();
+extern IggBool iggBeginDragDropTarget();
+extern void iggAcceptDragDropPayload(const char* type, int flags, char* payload_out, int size_out);
+extern void iggEndDragDropTarget();
+
 extern IggBool  iggIsItemHovered(int flags);
 extern void iggSetItemAllowOverlap();
 

@@ -490,6 +490,27 @@ int iggGetColumnsCount()
     return ImGui::GetColumnsCount();
 }
 
+IggBool iggBeginDragDropSource(int flags){
+    return ImGui::BeginDragDropSource(flags) ? 1 : 0;
+}
+IggBool iggSetDragDropPayload(const char* type, const char* data, int size){
+    return ImGui::SetDragDropPayload(type, (const void*)data, size) ? 1 : 0;
+}
+void iggEndDragDropSource(){
+    ImGui::EndDragDropSource();
+}
+IggBool iggBeginDragDropTarget(){
+    return ImGui::BeginDragDropTarget() ? 1 : 0;
+}
+void iggAcceptDragDropPayload(const char* type, int flags, char* payload_out, int size_out){
+    const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(type, flags);
+    if(payload && payload->IsDelivery())
+        memcpy(payload_out, payload->Data, size_out);
+}
+void iggEndDragDropTarget(){
+    ImGui::EndDragDropTarget();
+}
+
 IggBool iggIsItemHovered(int flags)
 {
    return ImGui::IsItemHovered(flags) ? 1 : 0;

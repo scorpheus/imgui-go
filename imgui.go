@@ -704,6 +704,49 @@ func GetColumnsCount() int {
 	return int(C.iggGetColumnsCount())
 }
 
+// Drag and Drop
+// [BETA API] Missing Demo code. API may evolve.
+// BeginDragDropSource call when the current item is active. If this return true, you can call SetDragDropPayload() + EndDragDropSource()
+func BeginDragDropSource(flags int) bool {
+	return C.iggBeginDragDropSource(C.int(flags)) != 0
+}
+
+// SetDragDropPayload type is a user defined string of maximum 32 characters. Strings starting with '_' are reserved for dear imgui internal types. Data is copied and held by imgui.
+func SetDragDropPayload(type_ string, payload string) bool {
+	typeArg, typeFin := wrapString(type_)
+	defer typeFin()
+	out := payload + "\000" + strings.Repeat(" ", 512-len(payload))
+	textArg, textFin := wrapString(out)
+	defer textFin()
+	return C.iggSetDragDropPayload(typeArg, textArg, C.int(512)) != 0
+}
+
+// EndDragDropSource only call EndDragDropSource() if BeginDragDropSource() returns true!
+func EndDragDropSource() {
+	C.iggEndDragDropSource()
+}
+
+// BeginDragDropTarget call after submitting an item that may receive an item. If this returns true, you can call AcceptDragDropPayload() + EndDragDropTarget()
+func BeginDragDropTarget() bool {
+	return C.iggBeginDragDropTarget() != 0
+}
+
+// AcceptDragDropPayload accept contents of a given type. If ImGuiDragDropFlags_AcceptBeforeDelivery is set you can peek into the payload before the mouse button is released.
+func AcceptDragDropPayload(type_ string, flags int) string {
+	typeArg, typeFin := wrapString(type_)
+	defer typeFin()
+	out := "\000" + strings.Repeat(" ", 511)
+	textArg, textFin := wrapString(out)
+	defer textFin()
+	C.iggAcceptDragDropPayload(typeArg, C.int(flags), textArg, C.int(512))
+	return C.GoString(textArg)
+}
+
+// EndDragDropTarget only call EndDragDropTarget() if BeginDragDropTarget() returns true!
+func EndDragDropTarget() {
+	C.iggEndDragDropTarget()
+}
+
 // IsItemHoveredV returns true if the last item is hovered.
 // (and usable, aka not blocked by a popup, etc.). See HoveredFlags for more options.
 func IsItemHoveredV(flags int) bool {
