@@ -4,4 +4,6 @@
 // of the core imgui header with all the various options.
 
 #define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
+#include "imgui_internal.h"

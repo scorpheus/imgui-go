@@ -28,6 +28,11 @@ extern void iggEnd(void);
 extern IggBool iggBeginChild(char const *id, IggVec2 const *size, IggBool border, int flags);
 extern void iggEndChild(void);
 
+extern float iggGetWindowWidth();
+extern float iggGetWindowHeight();
+extern void iggGetContentRegionMax(IggVec2 *out);
+extern void iggGetContentRegionAvail(IggVec2 *out);
+
 extern void iggSetNextWindowPos(IggVec2 const *pos, int cond, IggVec2 const *pivot);
 extern void iggSetNextWindowSize(IggVec2 const *size, int cond);
 extern void iggSetNextWindowSizeConstraints(const IggVec2* size_min, const IggVec2* size_max);
@@ -70,6 +75,7 @@ extern void iggEndCombo(void);
 
 extern IggBool iggSliderInt(char const *label, int *value, int minValue, int maxValue, char const *format);
 
+extern IggBool iggSplitter(IggBool split_vertically, float thickness, float *size1, float *size2);
 extern void iggSeparator(void);
 extern void iggSameLine(float posX, float spacingW);
 extern void iggSpacing(void);
@@ -79,10 +85,14 @@ extern void iggEndGroup(void);
 extern void iggSetCursorPos(IggVec2 const *localPos);
 extern float iggGetTextLineHeight(void);
 extern float iggGetTextLineHeightWithSpacing(void);
+extern float iggGetFrameHeight();
+extern float iggGetFrameHeightWithSpacing(); 
 
 extern IggBool iggTreeNode(char const *label, int flags);
 extern void iggTreePop(void);
 extern void iggSetNextTreeNodeOpen(IggBool open, int cond);
+
+extern IggBool iggCollapsingHeader(const char* label, IggBool p_open);
 
 extern IggBool iggSelectable(char const *label, IggBool selected, int flags, IggVec2 const *size);
 

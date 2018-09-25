@@ -92,6 +92,22 @@ void iggEndChild(void)
    ImGui::EndChild();
 }
 
+float iggGetWindowWidth(){
+    return ImGui::GetWindowWidth();
+}
+float iggGetWindowHeight(){
+    return ImGui::GetWindowHeight();
+}
+
+void iggGetContentRegionMax(IggVec2 *out){
+    ImVec2 im_out = ImGui::GetContentRegionMax();
+    exportValue(*out, im_out);
+}
+void iggGetContentRegionAvail(IggVec2 *out){
+    ImVec2 im_out = ImGui::GetContentRegionAvail();
+    exportValue(*out, im_out);
+}
+
 void iggSetNextWindowPos(IggVec2 const *pos, int cond, IggVec2 const *pivot)
 {
    Vec2Wrapper posArg(pos);
@@ -262,6 +278,18 @@ IggBool iggSliderInt(char const *label, int *value, int minValue, int maxValue, 
    return ImGui::SliderInt(label, value, minValue, maxValue, format) ? 1 : 0;
 }
 
+IggBool iggSplitter(IggBool split_vertically, float thickness, float *size1, float *size2)
+{
+    using namespace ImGui;
+    ImGuiContext& g = *GImGui;
+    ImGuiWindow* window = g.CurrentWindow;
+    ImGuiID id = window->GetID("##Splitter");
+    ImRect bb;
+    bb.Min = window->DC.CursorPos + (split_vertically != 0 ? ImVec2(*size1, 0.0f) : ImVec2(0.0f, *size1));
+    bb.Max = bb.Min + CalcItemSize(split_vertically != 0 ? ImVec2(thickness, -1.f) : ImVec2(-1.f, thickness), 0.0f, 0.0f);
+    return SplitterBehavior(id, bb, split_vertically != 0 ? ImGuiAxis_X : ImGuiAxis_Y, size1, size2, 8.f, 8.f, 0.0f);
+}
+
 void iggSeparator(void)
 {
    ImGui::Separator();
@@ -309,6 +337,16 @@ float iggGetTextLineHeightWithSpacing(void)
    return ImGui::GetTextLineHeightWithSpacing();
 }
 
+float iggGetFrameHeight()
+{
+   return ImGui::GetFrameHeight();
+}
+
+float iggGetFrameHeightWithSpacing()
+{
+   return ImGui::GetFrameHeightWithSpacing();
+}
+
 IggBool iggTreeNode(char const *label, int flags)
 {
    return ImGui::TreeNodeEx(label, flags) ? 1 : 0;
@@ -323,6 +361,12 @@ void iggSetNextTreeNodeOpen(IggBool open, int cond)
 {
    ImGui::SetNextTreeNodeOpen(open != 0, cond);
 }
+
+ IggBool iggCollapsingHeader(const char* label, IggBool p_open)
+ {
+    bool open = p_open != 0;
+    return ImGui::CollapsingHeader(label, &open, 0) ? 1 : 0;
+ }
 
 IggBool iggSelectable(char const *label, IggBool selected, int flags, IggVec2 const *size)
 {

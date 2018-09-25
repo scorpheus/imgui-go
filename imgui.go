@@ -126,6 +126,34 @@ func EndChild() {
 	C.iggEndChild()
 }
 
+// GetWindowWidth get current window width (shortcut for GetWindowSize().x)
+func GetWindowWidth() float32 {
+	return float32(C.iggGetWindowWidth())
+}
+
+// GetWindowHeight get current window height (shortcut for GetWindowSize().y)
+func GetWindowHeight() float32 {
+	return float32(C.iggGetWindowHeight())
+}
+
+// GetContentRegionMax current content boundaries (typically window boundaries including scrolling, or current column boundaries), in windows coordinates
+func GetContentRegionMax() Vec2 {
+	out := Vec2{}
+	outArg, outFin := out.wrapped()
+	C.iggGetContentRegionMax(outArg)
+	outFin()
+	return out
+}
+
+// GetContentRegionAvail  == GetContentRegionMax() - GetCursorPos()
+func GetContentRegionAvail() Vec2 {
+	out := Vec2{}
+	outArg, outFin := out.wrapped()
+	C.iggGetContentRegionAvail(outArg)
+	outFin()
+	return out
+}
+
 // SetNextWindowPosV sets next window position.
 // Call before Begin(). Use pivot=(0.5,0.5) to center on given point, etc.
 func SetNextWindowPosV(pos Vec2, cond Condition, pivot Vec2) {
@@ -385,6 +413,15 @@ func SliderInt(label string, value *int32, min, max int32) bool {
 	return SliderIntV(label, value, min, max, "%d")
 }
 
+// Splitter Add a movable splitter between to childs
+func Splitter(splitVertically bool, thickness float32, size1 *float32, size2 *float32) bool {
+	size1Arg, size1Fin := wrapFloat32(size1)
+	defer size1Fin()
+	size2Arg, size2Fin := wrapFloat32(size2)
+	defer size2Fin()
+	return C.iggSplitter(castBool(splitVertically), C.float(thickness), size1Arg, size2Arg) != 0
+}
+
 // Separator is generally horizontal. Inside a menu bar or in horizontal layout mode, this becomes a vertical separator.
 func Separator() {
 	C.iggSeparator()
@@ -438,6 +475,16 @@ func TextLineHeightWithSpacing() float32 {
 	return float32(C.iggGetTextLineHeightWithSpacing())
 }
 
+// GetFrameHeight ~ FontSize + style.FramePadding.y * 2
+func GetFrameHeight() float32 {
+	return float32(C.iggGetFrameHeight())
+}
+
+// GetFrameHeightWithSpacing ~ FontSize + style.FramePadding.y * 2 + style.ItemSpacing.y (distance in pixels between 2 consecutive lines of framed widgets)
+func GetFrameHeightWithSpacing() float32 {
+	return float32(C.iggGetFrameHeightWithSpacing())
+}
+
 // TreeNodeV returns true if the tree branch is to be rendered. Call TreePop() in this case.
 func TreeNodeV(label string, flags int) bool {
 	labelArg, labelFin := wrapString(label)
@@ -458,6 +505,12 @@ func TreePop() {
 // SetNextTreeNodeOpen sets the open/collapsed state of the following tree node.
 func SetNextTreeNodeOpen(open bool, cond Condition) {
 	C.iggSetNextTreeNodeOpen(castBool(open), C.int(cond))
+}
+
+func CollapsingHeader(label string, open bool) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	return C.iggCollapsingHeader(labelArg, castBool(open)) != 0
 }
 
 // SelectableV returns true if the user clicked it, so you can modify your selection state.
