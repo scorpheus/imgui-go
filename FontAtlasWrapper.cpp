@@ -16,6 +16,13 @@ IggFont iggAddFontFromFileTTF(IggFontAtlas handle, char const *filename, float s
    return static_cast<IggFont>(font);
 }
 
+IggFont iggAddFontFromMemoryTTF(IggFontAtlas handle, void* font_data, int font_size, float sizePixels)
+{
+   ImFontAtlas *fontAtlas = reinterpret_cast<ImFontAtlas *>(handle);
+   ImFont *font = fontAtlas->AddFontFromMemoryTTF(font_data, font_size, sizePixels);
+   return static_cast<IggFont>(font);
+}
+
 void iggFontAtlasGetTexDataAsAlpha8(IggFontAtlas handle, unsigned char **pixels,
                                     int *width, int *height, int *bytesPerPixel)
 {

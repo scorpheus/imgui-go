@@ -33,6 +33,12 @@ func (atlas FontAtlas) AddFontFromFileTTF(filename string, sizePixels float32) F
 	return Font(fontHandle)
 }
 
+// AddFontFromMemoryTTF // Note: Transfer ownership of 'ttf_data' to ImFontAtlas! Will be deleted after Build(). Set font_cfg->FontDataOwnedByAtlas to false to keep ownership.
+func (atlas FontAtlas) AddFontFromMemoryTTF(data []byte, sizePixels float32) Font {
+	fontHandle := C.iggAddFontFromMemoryTTF(atlas.handle(), unsafe.Pointer(&data[0]), C.int(len(data)), C.float(sizePixels))
+	return Font(fontHandle)
+}
+
 // TextureDataAlpha8 returns the image in 8-bit alpha values for the font atlas.
 // The returned image is valid as long as the font atlas is.
 func (atlas FontAtlas) TextureDataAlpha8() *Alpha8Image {
