@@ -18,8 +18,10 @@ IggFont iggAddFontFromFileTTF(IggFontAtlas handle, char const *filename, float s
 
 IggFont iggAddFontFromMemoryTTF(IggFontAtlas handle, void* font_data, int font_size, float sizePixels)
 {
-   ImFontAtlas *fontAtlas = reinterpret_cast<ImFontAtlas *>(handle);
-   ImFont *font = fontAtlas->AddFontFromMemoryTTF(font_data, font_size, sizePixels);
+   ImFontAtlas *fontAtlas = reinterpret_cast<ImFontAtlas *>(handle);   
+   ImFontConfig font_cfg;
+   font_cfg.FontDataOwnedByAtlas = false;
+   ImFont *font = fontAtlas->AddFontFromMemoryTTF(font_data, font_size, sizePixels, &font_cfg);
    return static_cast<IggFont>(font);
 }
 
