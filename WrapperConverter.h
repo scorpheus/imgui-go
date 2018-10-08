@@ -14,9 +14,9 @@ class TypeWrapper
 {
 public:
    TypeWrapper(IggType *iggValue)
-      :  iggValue(iggValue), imguiValue(nullptr)
+      :  iggValue(iggValue), imguiValue(NULL)
    {
-      if (iggValue != nullptr)
+      if (iggValue != NULL)
       {
          imguiValue = &imguiBuffer;
          importValue(*imguiValue, *iggValue);
@@ -24,9 +24,9 @@ public:
    }
 
    TypeWrapper(IggType const *constIggValue)
-      :  iggValue(nullptr), imguiValue(nullptr)
+      :  iggValue(NULL), imguiValue(NULL)
    {
-      if (constIggValue != nullptr)
+      if (constIggValue != NULL)
       {
          imguiValue = &imguiBuffer;
          importValue(*imguiValue, *constIggValue);
@@ -35,7 +35,7 @@ public:
 
    ~TypeWrapper()
    {
-      if (iggValue != nullptr)
+      if (iggValue != NULL)
       {
          exportValue(*iggValue, *imguiValue);
       }
