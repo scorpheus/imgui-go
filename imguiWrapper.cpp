@@ -144,6 +144,11 @@ void iggSetNextWindowBgAlpha(float value)
    ImGui::SetNextWindowBgAlpha(value);
 }
 
+void iggSetScrollHere(float center_y_ratio)
+{
+   ImGui::SetScrollHere(center_y_ratio);
+}
+
 void iggPushFont(IggFont handle)
 {
    ImFont *font = reinterpret_cast<ImFont *>(handle);
@@ -518,4 +523,11 @@ IggBool iggIsItemHovered(int flags)
  void iggSetItemAllowOverlap()
 {
    ImGui::SetItemAllowOverlap();
+}
+
+IggBool iggIsMouseClicked(int button, IggBool repeat){
+    return ImGui::IsMouseClicked(button, repeat != 0) ? 1 : 0;    
+}
+IggBool iggIsMouseDoubleClicked(int button){
+    return ImGui::IsMouseDoubleClicked(button) ? 1 : 0;    
 }

@@ -203,6 +203,11 @@ func SetNextWindowBgAlpha(value float32) {
 	C.iggSetNextWindowBgAlpha(C.float(value))
 }
 
+// SetScrollHere adjust scrolling amount to make current cursor position visible. center_y_ratio=0.0: top, 0.5: center, 1.0: bottom. When using to make a "default/current item" visible, consider using SetItemDefaultFocus() instead.
+func SetScrollHere(CenterYRatio float32) {
+	C.iggSetScrollHere(C.float(CenterYRatio))
+}
+
 // PushFont adds the given font on the stack. Use DefaultFont to refer to the default font.
 func PushFont(font Font) {
 	C.iggPushFont(font.handle())
@@ -761,4 +766,14 @@ func IsItemHovered() bool {
 // SetItemAllowOverlap allow last item to be overlapped by a subsequent item. sometimes useful with invisible buttons, selectables, etc. to catch unused area.
 func SetItemAllowOverlap() {
 	C.iggSetItemAllowOverlap()
+}
+
+// IsMouseClicked did mouse button clicked (went from !Down to Down)
+func IsMouseClicked(button int, repeat bool) bool {
+	return C.iggIsMouseClicked(C.int(button), castBool(repeat)) != 0
+}
+
+// IsMouseDoubleClicked did mouse button double-clicked. a double-click returns false in IsMouseClicked(). uses io.MouseDoubleClickTime.
+func IsMouseDoubleClicked(button int) bool {
+	return C.iggIsMouseDoubleClicked(C.int(button)) != 0
 }

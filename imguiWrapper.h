@@ -39,6 +39,7 @@ extern void iggSetNextWindowSizeConstraints(const IggVec2* size_min, const IggVe
 extern void iggSetNextWindowContentSize(const IggVec2* size);  
 extern void iggSetNextWindowFocus(void);
 extern void iggSetNextWindowBgAlpha(float value);
+extern void iggSetScrollHere(float center_y_ratio);
 
 extern void iggPushFont(IggFont handle);
 extern void iggPopFont(void);
@@ -133,6 +134,8 @@ extern void iggEndDragDropTarget();
 extern IggBool  iggIsItemHovered(int flags);
 extern void iggSetItemAllowOverlap();
 
+extern IggBool iggIsMouseClicked(int button, IggBool repeat);
+extern IggBool iggIsMouseDoubleClicked(int button);
 
 #ifdef __cplusplus
 }
