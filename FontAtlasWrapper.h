@@ -13,6 +13,8 @@ extern IggFont iggAddFontFromMemoryTTF(IggFontAtlas handle, void* font_data, int
 
 extern void iggFontAtlasGetTexDataAsAlpha8(IggFontAtlas handle, unsigned char **pixels,
       int *width, int *height, int *bytesPerPixel);
+extern void iggFontAtlasGetTexDataAsRGBA32(IggFontAtlas handle, unsigned char **pixels,
+      int *width, int *height, int *bytesPerPixel);
 extern void iggFontAtlasSetTextureID(IggFontAtlas handle, IggTextureID id);
 
 #ifdef __cplusplus
