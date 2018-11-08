@@ -768,6 +768,17 @@ func SetItemAllowOverlap() {
 	C.iggSetItemAllowOverlap()
 }
 
+// CalcTextSize
+func CalcTextSize(text string) Vec2 {
+	textArg, textFin := wrapString(text)
+	defer textFin()
+	out := Vec2{}
+	outArg, outFin := out.wrapped()
+	C.iggCalcTextSize(textArg, outArg)
+	outFin()
+	return out
+}
+
 // IsMouseClicked did mouse button clicked (went from !Down to Down)
 func IsMouseClicked(button int, repeat bool) bool {
 	return C.iggIsMouseClicked(C.int(button), castBool(repeat)) != 0

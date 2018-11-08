@@ -525,6 +525,12 @@ IggBool iggIsItemHovered(int flags)
    ImGui::SetItemAllowOverlap();
 }
 
+void iggCalcTextSize(const char* text, IggVec2 *out)
+{    
+    ImVec2 im_out = ImGui::CalcTextSize(text, NULL, true); 
+    exportValue(*out, im_out);
+}
+
 IggBool iggIsMouseClicked(int button, IggBool repeat){
     return ImGui::IsMouseClicked(button, repeat != 0) ? 1 : 0;    
 }

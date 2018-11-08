@@ -134,6 +134,8 @@ extern void iggEndDragDropTarget();
 extern IggBool  iggIsItemHovered(int flags);
 extern void iggSetItemAllowOverlap();
 
+extern void iggCalcTextSize(const char* text, IggVec2 *out);
+
 extern IggBool iggIsMouseClicked(int button, IggBool repeat);
 extern IggBool iggIsMouseDoubleClicked(int button);
 
