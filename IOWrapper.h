@@ -29,6 +29,8 @@ extern void iggIoKeyAlt(IggIO handle, int leftAlt, int rightAlt);
 extern void iggIoKeySuper(IggIO handle, int leftSuper, int rightSuper);
 extern void iggIoAddInputCharactersUTF8(IggIO handle, const char *utf8_char);
 
+extern IggBool iggIoKeyCtrlPressed(IggIO handle);
+
 #ifdef __cplusplus
 }
 #endif

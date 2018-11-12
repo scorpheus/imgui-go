@@ -87,6 +87,12 @@ void iggIoKeyCtrl(IggIO handle, int leftCtrl, int rigthCtrl)
    io.KeyCtrl = io.KeysDown[leftCtrl] || io.KeysDown[rigthCtrl];
 }
 
+IggBool iggIoKeyCtrlPressed(IggIO handle)
+{
+   ImGuiIO & io = *reinterpret_cast<ImGuiIO *>(handle); 
+   return io.KeyCtrl ? 1 : 0;
+}
+
 void iggIoKeyShift(IggIO handle, int leftShift, int rightShift)
 {
    ImGuiIO & io = *reinterpret_cast<ImGuiIO *>(handle);

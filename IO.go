@@ -98,6 +98,11 @@ func (io IO) KeyCtrl(leftCtrl int, rigthCtrl int) {
 	C.iggIoKeyCtrl(io.handle, C.int(leftCtrl), C.int(rigthCtrl))
 }
 
+// KeyCtrlPressed get the keyboard modifier control pressed
+func (io IO) KeyCtrlPressed() bool {
+	return C.iggIoKeyCtrlPressed(io.handle) != 0
+}
+
 // KeyShift sets the keyboard modifier shift pressed
 func (io IO) KeyShift(leftShift int, rigthShift int) {
 	C.iggIoKeyShift(io.handle, C.int(leftShift), C.int(rigthShift))
