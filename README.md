@@ -1,19 +1,21 @@
 # Dear ImGui for Go
 
+[![Go Doc](https://godoc.org/github.com/inkyblackness/imgui-go?status.svg)](https://godoc.org/github.com/inkyblackness/imgui-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/inkyblackness/imgui-go)](https://goreportcard.com/report/github.com/inkyblackness/imgui-go)
+[![GolangCI](https://golangci.com/badges/github.com/inkyblackness/imgui-go.svg)](https://golangci.com)
 
 This library is a [Go](https://www.golang.org) wrapper for [Dear ImGui](https://github.com/ocornut/imgui).
 
-At the moment, this wrapper is a special-purpose wrapper for use within InkyBlackness.
+This wrapper started as a special-purpose wrapper for use within InkyBlackness.
 However, it is self-contained and can be used for other purposes as well.
 
 This wrapper is
 * hand-crafted, for Go
 * documented
 * versioned
-* with a ported example using [GLFW3](https://github.com/go-gl/glfw) and [OpenGL3](https://github.com/go-gl/gl).
+* with ported examples in a separate repository (see below)
 
-![Screenshot from example](_examples/opengl3_example/screenshot.png)
+![Screenshot from example](assets/screenshot.png)
 
 ## API naming
 
@@ -41,19 +43,27 @@ This library does not mirror the versions of the wrapped ImGui. The semantic ver
 * Minor changes: Extensions in API. Typically done through small version increments of ImGui and/or exposing further features in a compatible way.
 * Patch changes: Bug fixes - either in the wrapper or the wrapped ImGui, given that the API & behaviour remains the same.
 
-At the moment, this library uses version [1.61](https://github.com/ocornut/imgui/releases/tag/v1.61) of ImGui.
+At the moment, this library uses version [1.67](https://github.com/ocornut/imgui/releases/tag/v1.67) of ImGui.
+
+## Examples
+A separate repository was created to host ported examples and reference implementations.
+See repository [inkyblackness/imgui-go-examples](https://github.com/inkyblackness/imgui-go-examples).
+
+It contains reference implementations for libraries such as [GLFW3](https://github.com/go-gl/glfw) and [SDL2](https://github.com/veandco/go-sdl2), using [OpenGL](https://github.com/go-gl/gl).
+
+The screenshot above was created with such an example.
 
 ## Alternatives
 
 Before this project was created, the following alternatives were considered - and ignored:
-* [kdrag0n/go-imgui](https://github.com/kdrag0n/go-imgui). Reasons for dismissal:
+* [kdrag0n/go-imgui](https://github.com/kdrag0n/go-imgui). Reasons for dismissal at time of decision:
   * Auto-generated bloat, which doesn't help
-  * Old API (1.5x)
-  * Does not compile (Issues [1](https://github.com/kdrag0n/go-imgui/issues/1) and [3](https://github.com/kdrag0n/go-imgui/issues/3))
-  * Project appears to be abandoned
-* [Extrawurst/cimgui](https://github.com/Extrawurst/cimgui). Reasons for dismissal:
-  * Old API (1.5x), 1.6x attempted, in-progress, could not be used
-  * Appears to still semi-expose the C++ API, especially through the structures
+  * Was using old API (1.5x)
+  * Did not compile (Issues [1](https://github.com/kdrag0n/go-imgui/issues/1) and [3](https://github.com/kdrag0n/go-imgui/issues/3))
+  * Project appeared to be abandoned
+* [Extrawurst/cimgui](https://github.com/Extrawurst/cimgui). Reasons for dismissal at time of decision:
+  * Was using old API (1.5x), 1.6x was attempted
+  * Apparently semi-exposed the C++ API, especially through the structures
   * Adding this adds another dependency
 
 

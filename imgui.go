@@ -1,8 +1,12 @@
 package imgui
 
+// #cgo CXXFLAGS: -std=c++11
 // #include "imguiWrapper.h"
 import "C"
-import "strings"
+import (
+	"math"
+	"strings"
+)
 
 // User fill ImGuiIO.KeyMap[] array with indices into the ImGuiIO.KeysDown[512] array
 const (
@@ -108,6 +112,7 @@ func End() {
 }
 
 // BeginChildV pushes a new child to the stack and starts appending to it.
+// flags are the WindowFlags to apply.
 func BeginChildV(id string, size Vec2, border bool, flags int) bool {
 	idArg, idFin := wrapString(id)
 	defer idFin()
@@ -126,32 +131,42 @@ func EndChild() {
 	C.iggEndChild()
 }
 
-// GetWindowWidth get current window width (shortcut for GetWindowSize().x)
-func GetWindowWidth() float32 {
-	return float32(C.iggGetWindowWidth())
+// WindowPos returns the current window position in screen space.
+// This is useful if you want to do your own drawing via the DrawList API.
+func WindowPos() Vec2 {
+	var value Vec2
+	valueArg, valueFin := value.wrapped()
+	C.iggWindowPos(valueArg)
+	valueFin()
+	return value
 }
 
-// GetWindowHeight get current window height (shortcut for GetWindowSize().y)
-func GetWindowHeight() float32 {
-	return float32(C.iggGetWindowHeight())
+// WindowSize returns the size of the current window.
+func WindowSize() Vec2 {
+	var value Vec2
+	valueArg, valueFin := value.wrapped()
+	C.iggWindowSize(valueArg)
+	valueFin()
+	return value
 }
 
-// GetContentRegionMax current content boundaries (typically window boundaries including scrolling, or current column boundaries), in windows coordinates
-func GetContentRegionMax() Vec2 {
-	out := Vec2{}
-	outArg, outFin := out.wrapped()
-	C.iggGetContentRegionMax(outArg)
-	outFin()
-	return out
+// WindowWidth returns the width of the current window.
+func WindowWidth() float32 {
+	return float32(C.iggWindowWidth())
 }
 
-// GetContentRegionAvail  == GetContentRegionMax() - GetCursorPos()
-func GetContentRegionAvail() Vec2 {
-	out := Vec2{}
-	outArg, outFin := out.wrapped()
-	C.iggGetContentRegionAvail(outArg)
-	outFin()
-	return out
+// WindowHeight returns the height of the current window.
+func WindowHeight() float32 {
+	return float32(C.iggWindowHeight())
+}
+
+// ContentRegionAvail returns the size of the content region that is available (based on the current cursor position).
+func ContentRegionAvail() Vec2 {
+	var value Vec2
+	valueArg, valueFin := value.wrapped()
+	C.iggContentRegionAvail(valueArg)
+	valueFin()
+	return value
 }
 
 // SetNextWindowPosV sets next window position.
@@ -203,11 +218,6 @@ func SetNextWindowBgAlpha(value float32) {
 	C.iggSetNextWindowBgAlpha(C.float(value))
 }
 
-// SetScrollHere adjust scrolling amount to make current cursor position visible. center_y_ratio=0.0: top, 0.5: center, 1.0: bottom. When using to make a "default/current item" visible, consider using SetItemDefaultFocus() instead.
-func SetScrollHere(CenterYRatio float32) {
-	C.iggSetScrollHere(C.float(CenterYRatio))
-}
-
 // PushFont adds the given font on the stack. Use DefaultFont to refer to the default font.
 func PushFont(font Font) {
 	C.iggPushFont(font.handle())
@@ -256,6 +266,11 @@ func PopStyleVar() {
 	PopStyleVarV(1)
 }
 
+// FontSize returns the current font size (= height in pixels) of the current font with the current scale applied.
+func FontSize() float32 {
+	return float32(C.iggGetFontSize())
+}
+
 // PushItemWidth sets width of items for the common item+label case, in pixels.
 // 0.0f = default to ~2/3 of windows width, >0.0f: width in pixels,
 // <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side).
@@ -266,6 +281,11 @@ func PushItemWidth(width float32) {
 // PopItemWidth must be called for each call to PushItemWidth().
 func PopItemWidth() {
 	C.iggPopItemWidth()
+}
+
+// CalcItemWidth returns the width of items given pushed settings and current cursor position.
+func CalcItemWidth() float32 {
+	return float32(C.iggCalcItemWidth())
 }
 
 // PushTextWrapPosV defines word-wrapping for Text() commands.
@@ -313,17 +333,6 @@ func LabelText(label, text string) {
 	textArg, textFin := wrapString(text)
 	defer textFin()
 	C.iggLabelText(labelArg, textArg)
-}
-
-// InputText
-func InputText(label, text string) (bool, string) {
-	labelArg, labelFin := wrapString(label)
-	defer labelFin()
-	out := text + "\000" + strings.Repeat(" ", 512-len(text))
-	textArg, textFin := wrapString(out)
-	defer textFin()
-	return_val := C.iggInputText(labelArg, textArg, C.int(512))
-	return return_val != 0, C.GoString(textArg)
 }
 
 // ButtonV returning true if it is pressed.
@@ -384,6 +393,21 @@ func Checkbox(id string, selected *bool) bool {
 
 // BeginComboV creates a combo box with complete control over the content to the user.
 // Call EndCombo() if this function returns true.
+func ProgressBarV(fraction float32, size Vec2, overlay string) {
+	sizeArg, _ := size.wrapped()
+	overlayArg, overlayFin := wrapString(overlay)
+	defer overlayFin()
+	C.iggProgressBar(C.float(fraction), sizeArg, overlayArg)
+}
+
+// ProgressBar calls ProgressBarV(fraction, Vec2{X: -1, Y: 0}, "").
+func ProgressBar(fraction float32) {
+	ProgressBarV(fraction, Vec2{X: -1, Y: 0}, "")
+}
+
+// BeginComboV creates a combo box with complete control over the content to the user.
+// Call EndCombo() if this function returns true.
+// flags are the ComboFlags to apply.
 func BeginComboV(label, previewValue string, flags int) bool {
 	labelArg, labelFin := wrapString(label)
 	defer labelFin()
@@ -400,6 +424,69 @@ func BeginCombo(label, previewValue string) bool {
 // EndCombo must be called if BeginComboV() returned true.
 func EndCombo() {
 	C.iggEndCombo()
+}
+
+// DragFloatV creates a draggable slider for floats.
+func DragFloatV(label string, value *float32, speed, min, max float32, format string, power float32) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	valueArg, valueFin := wrapFloat(value)
+	defer valueFin()
+	formatArg, formatFin := wrapString(format)
+	defer formatFin()
+	return C.iggDragFloat(labelArg, valueArg, C.float(speed), C.float(min), C.float(max), formatArg, C.float(power)) != 0
+}
+
+// DragFloat calls DragFloatV(label, value, 1.0, 0.0, 0.0, "%.3f", 1.0).
+func DragFloat(label string, value *float32) bool {
+	return DragFloatV(label, value, 1.0, 0.0, 0.0, "%.3f", 1.0)
+}
+
+// DragIntV creates a draggable slider for integers.
+func DragIntV(label string, value *int32, speed float32, min, max int32, format string) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	valueArg, valueFin := wrapInt32(value)
+	defer valueFin()
+	formatArg, formatFin := wrapString(format)
+	defer formatFin()
+	return C.iggDragInt(labelArg, valueArg, C.float(speed), C.int(min), C.int(max), formatArg) != 0
+}
+
+// DragInt calls DragIntV(label, value, 1.0, 0, 0, "%d").
+func DragInt(label string, value *int32) bool {
+	return DragIntV(label, value, 1.0, 0, 0, "%d")
+}
+
+// SliderFloatV creates a slider for floats.
+func SliderFloatV(label string, value *float32, min, max float32, format string, power float32) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	valueArg, valueFin := wrapFloat(value)
+	defer valueFin()
+	formatArg, formatFin := wrapString(format)
+	defer formatFin()
+	return C.iggSliderFloat(labelArg, valueArg, C.float(min), C.float(max), formatArg, C.float(power)) != 0
+}
+
+// SliderFloat calls SliderIntV(label, value, min, max, "%.3f", 1.0).
+func SliderFloat(label string, value *float32, min, max float32) bool {
+	return SliderFloatV(label, value, min, max, "%.3f", 1.0)
+}
+
+// SliderFloat3V creates slider for a 3D vector.
+func SliderFloat3V(label string, values *[3]float32, min, max float32, format string, power float32) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	formatArg, formatFin := wrapString(format)
+	defer formatFin()
+	cvalues := (*C.float)(&values[0])
+	return C.iggSliderFloatN(labelArg, cvalues, 3, C.float(min), C.float(max), formatArg, C.float(power)) != 0
+}
+
+// SliderFloat3 calls SliderFloat3V(label, values, min, max, "%.3f", 1,0).
+func SliderFloat3(label string, values *[3]float32, min, max float32) bool {
+	return SliderFloat3V(label, values, min, max, "%.3f", 1.0)
 }
 
 // SliderIntV creates a slider for integers.
@@ -420,11 +507,70 @@ func SliderInt(label string, value *int32, min, max int32) bool {
 
 // Splitter Add a movable splitter between to childs
 func Splitter(splitVertically bool, thickness float32, size1 *float32, size2 *float32) bool {
-	size1Arg, size1Fin := wrapFloat32(size1)
+	size1Arg, size1Fin := wrapFloat(size1)
 	defer size1Fin()
-	size2Arg, size2Fin := wrapFloat32(size2)
+	size2Arg, size2Fin := wrapFloat(size2)
 	defer size2Fin()
 	return C.iggSplitter(castBool(splitVertically), C.float(thickness), size1Arg, size2Arg) != 0
+}
+
+// InputTextV creates a text field for dynamic text input.
+//
+// Contrary to the original library, this wrapper does not limit the maximum number of possible characters.
+// Dynamic resizing of the internal buffer is handled within the wrapper and the user will never be called for such requests.
+//
+// The provided callback is called for any of the requested InputTextFlagsCallback* flags.
+//
+// To implement a character limit, provide a callback that drops input characters when the requested length has been reached.
+func InputTextV(label string, text *string, flags int, cb InputTextCallback) bool {
+	if text == nil {
+		panic("text can't be nil")
+	}
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	state := newInputTextState(*text, cb)
+	defer func() {
+		*text = state.buf.toGo()
+		state.release()
+	}()
+
+	return C.iggInputText(labelArg, (*C.char)(state.buf.ptr), C.uint(state.buf.size),
+		C.int(flags|inputTextFlagsCallbackResize), state.key) != 0
+}
+
+// InputText calls InputTextV(label, string, 0, nil)
+func InputText(label string, text *string) bool {
+	return InputTextV(label, text, 0, nil)
+}
+
+// InputTextMultilineV provides a field for dynamic text input of multiple lines.
+//
+// Contrary to the original library, this wrapper does not limit the maximum number of possible characters.
+// Dynamic resizing of the internal buffer is handled within the wrapper and the user will never be called for such requests.
+//
+// The provided callback is called for any of the requested InputTextFlagsCallback* flags.
+//
+// To implement a character limit, provide a callback that drops input characters when the requested length has been reached.
+func InputTextMultilineV(label string, text *string, size Vec2, flags int, cb InputTextCallback) bool {
+	if text == nil {
+		panic("text can't be nil")
+	}
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	sizeArg, _ := size.wrapped()
+	state := newInputTextState(*text, cb)
+	defer func() {
+		*text = state.buf.toGo()
+		state.release()
+	}()
+
+	return C.iggInputTextMultiline(labelArg, (*C.char)(state.buf.ptr), C.uint(state.buf.size), sizeArg,
+		C.int(flags|inputTextFlagsCallbackResize), state.key) != 0
+}
+
+// InputTextMultiline calls InputTextMultilineV(label, text, Vec2{0,0}, 0, nil)
+func InputTextMultiline(label string, text *string) bool {
+	return InputTextMultilineV(label, text, Vec2{}, 0, nil)
 }
 
 // Separator is generally horizontal. Inside a menu bar or in horizontal layout mode, this becomes a vertical separator.
@@ -464,10 +610,60 @@ func EndGroup() {
 	C.iggEndGroup()
 }
 
+// CursorPos returns the cursor position in window coordinates (relative to window position).
+func CursorPos() Vec2 {
+	var value Vec2
+	valueArg, valueFin := value.wrapped()
+	C.iggCursorPos(valueArg)
+	valueFin()
+	return value
+}
+
+// CursorPosX returns the x-coordinate of the cursor position in window coordinates.
+func CursorPosX() float32 {
+	return float32(C.iggCursorPosX())
+}
+
+// CursorPosY returns the y-coordinate of the cursor position in window coordinates.
+func CursorPosY() float32 {
+	return float32(C.iggCursorPosY())
+}
+
+// CursorStartPos returns the initial cursor position in window coordinates.
+func CursorStartPos() Vec2 {
+	var value Vec2
+	valueArg, valueFin := value.wrapped()
+	C.iggCursorStartPos(valueArg)
+	valueFin()
+	return value
+}
+
+// CursorScreenPos returns the cursor position in absolute screen coordinates.
+func CursorScreenPos() Vec2 {
+	var value Vec2
+	valueArg, valueFin := value.wrapped()
+	C.iggCursorScreenPos(valueArg)
+	valueFin()
+	return value
+}
+
 // SetCursorPos sets the cursor relative to the current window.
 func SetCursorPos(localPos Vec2) {
 	localPosArg, _ := localPos.wrapped()
 	C.iggSetCursorPos(localPosArg)
+}
+
+// SetCursorScreenPos sets the cursor position in absolute screen coordinates.
+func SetCursorScreenPos(absPos Vec2) {
+	absPosArg, _ := absPos.wrapped()
+	C.iggSetCursorScreenPos(absPosArg)
+}
+
+// AlignTextToFramePadding vertically aligns upcoming text baseline to
+// FramePadding.y so that it will align properly to regularly framed
+// items. Call if you have text on a line before a framed item.
+func AlignTextToFramePadding() {
+	C.iggAlignTextToFramePadding()
 }
 
 // TextLineHeight returns ~ FontSize.
@@ -512,6 +708,7 @@ func SetNextTreeNodeOpen(open bool, cond Condition) {
 	C.iggSetNextTreeNodeOpen(castBool(open), C.int(cond))
 }
 
+// CollapsingHeader
 func CollapsingHeader(label string, open bool) bool {
 	labelArg, labelFin := wrapString(label)
 	defer labelFin()
@@ -519,6 +716,7 @@ func CollapsingHeader(label string, open bool) bool {
 }
 
 // SelectableV returns true if the user clicked it, so you can modify your selection state.
+// flags are the SelectableFlags to apply.
 // size.x==0.0: use remaining width, size.x>0.0: specify width.
 // size.y==0.0: use label height, size.y>0.0: specify height
 func SelectableV(label string, selected bool, flags int, size Vec2) bool {
@@ -531,6 +729,100 @@ func SelectableV(label string, selected bool, flags int, size Vec2) bool {
 // Selectable calls SelectableV(label, false, 0, Vec2{0, 0})
 func Selectable(label string) bool {
 	return SelectableV(label, false, 0, Vec2{})
+}
+
+// ListBoxV creates a list of selectables of given items with equal height, enclosed with header and footer.
+// This version accepts a custom item height.
+// The function returns true if the selection was changed. The value of currentItem will indicate the new selected item.
+func ListBoxV(label string, currentItem *int32, items []string, heightItems int) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+
+	valueArg, valueFin := wrapInt32(currentItem)
+	defer valueFin()
+
+	itemsCount := len(items)
+
+	argv := make([]*C.char, itemsCount)
+	for i, item := range items {
+		itemArg, itemDeleter := wrapString(item)
+		defer itemDeleter()
+		argv[i] = itemArg
+	}
+
+	return C.iggListBoxV(labelArg, valueArg, &argv[0], C.int(itemsCount), C.int(heightItems)) != 0
+}
+
+// ListBox calls ListBoxV(label, currentItem, items, -1)
+// The function returns true if the selection was changed. The value of currentItem will indicate the new selected item.
+func ListBox(label string, currentItem *int32, items []string) bool {
+	return ListBoxV(label, currentItem, items, -1)
+}
+
+// PlotLines draws an array of floats as a line graph.
+// It calls PlotLinesV using no overlay text and automatically calculated scale and graph size.
+func PlotLines(label string, values []float32) {
+	PlotLinesV(label, values, 0, "", math.MaxFloat32, math.MaxFloat32, Vec2{})
+}
+
+// PlotLinesV draws an array of floats as a line graph with additional options.
+// valuesOffset specifies an offset into the values array at which to start drawing, wrapping around when the end of the values array is reached.
+// overlayText specifies a string to print on top of the graph.
+// scaleMin and scaleMax define the scale of the y axis, if either is math.MaxFloat32 that value is calculated from the input data.
+// graphSize defines the size of the graph, if either coordinate is zero the default size for that direction is used.
+func PlotLinesV(label string, values []float32, valuesOffset int, overlayText string, scaleMin float32, scaleMax float32, graphSize Vec2) {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+
+	valuesCount := len(values)
+	valuesArray := make([]C.float, valuesCount)
+	for i, value := range values {
+		valuesArray[i] = C.float(value)
+	}
+
+	var overlayTextArg *C.char
+	if overlayText != "" {
+		var overlayTextFinisher func()
+		overlayTextArg, overlayTextFinisher = wrapString(overlayText)
+		defer overlayTextFinisher()
+	}
+
+	graphSizeArg, _ := graphSize.wrapped()
+
+	C.iggPlotLines(labelArg, &valuesArray[0], C.int(valuesCount), C.int(valuesOffset), overlayTextArg, C.float(scaleMin), C.float(scaleMax), graphSizeArg)
+}
+
+// PlotHistogram draws an array of floats as a bar graph.
+// It calls PlotHistogramV using no overlay text and automatically calculated scale and graph size.
+func PlotHistogram(label string, values []float32) {
+	PlotHistogramV(label, values, 0, "", math.MaxFloat32, math.MaxFloat32, Vec2{})
+}
+
+// PlotHistogramV draws an array of floats as a bar graph with additional options.
+// valuesOffset specifies an offset into the values array at which to start drawing, wrapping around when the end of the values array is reached.
+// overlayText specifies a string to print on top of the graph.
+// scaleMin and scaleMax define the scale of the y axis, if either is math.MaxFloat32 that value is calculated from the input data.
+// graphSize defines the size of the graph, if either coordinate is zero the default size for that direction is used.
+func PlotHistogramV(label string, values []float32, valuesOffset int, overlayText string, scaleMin float32, scaleMax float32, graphSize Vec2) {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+
+	valuesCount := len(values)
+	valuesArray := make([]C.float, valuesCount)
+	for i, value := range values {
+		valuesArray[i] = C.float(value)
+	}
+
+	var overlayTextArg *C.char
+	if overlayText != "" {
+		var overlayTextFinisher func()
+		overlayTextArg, overlayTextFinisher = wrapString(overlayText)
+		defer overlayTextFinisher()
+	}
+
+	graphSizeArg, _ := graphSize.wrapped()
+
+	C.iggPlotHistogram(labelArg, &valuesArray[0], C.int(valuesCount), C.int(valuesOffset), overlayTextArg, C.float(scaleMin), C.float(scaleMax), graphSizeArg)
 }
 
 // SetTooltip sets a text tooltip under the mouse-cursor, typically use with IsItemHovered().
@@ -662,53 +954,6 @@ func CloseCurrentPopup() {
 	C.iggCloseCurrentPopup()
 }
 
-// ColumnsV You can also use SameLine(pos_x) for simplified columns. The columns API is still work-in-progress and rather lacking.
-func ColumnsV(count int, id string, border bool) {
-	idArg, idFin := wrapString(id)
-	defer idFin()
-	C.iggColumns(C.int(count), idArg, castBool(border))
-}
-
-// Columns calls ColumnsV(count, "", true)
-func Columns(count int) {
-	ColumnsV(count, "", true)
-}
-
-// NextColumn next column, defaults to current row or next row if the current row is finished
-func NextColumn() {
-	C.iggNextColumn()
-}
-
-// GetColumnIndex get current column index
-func GetColumnIndex() int {
-	return int(C.iggGetColumnIndex())
-}
-
-// GetColumnWidth get column width (in pixels). pass -1 to use current column
-func GetColumnWidth(columnIndex int) float32 {
-	return float32(C.iggGetColumnWidth(C.int(columnIndex)))
-}
-
-// SetColumnWidthnset column width (in pixels). pass -1 to use current column
-func SetColumnWidth(columnIndex int, width float32) {
-	C.iggSetColumnWidth(C.int(columnIndex), C.float(width))
-}
-
-// GetColumnOffset get position of column line (in pixels, from the left side of the contents region). pass -1 to use current column, otherwise 0..GetColumnsCount() inclusive. column 0 is typically 0.0f
-func GetColumnOffset(columnIndex int) float32 {
-	return float32(C.iggGetColumnOffset(C.int(columnIndex)))
-}
-
-// SetColumnOffset set position of column line (in pixels, from the left side of the contents region). pass -1 to use current column
-func SetColumnOffset(columnIndex int, offsetX float32) {
-	C.iggSetColumnOffset(C.int(columnIndex), C.float(offsetX))
-}
-
-// GetColumnsCount get the column count
-func GetColumnsCount() int {
-	return int(C.iggGetColumnsCount())
-}
-
 // Drag and Drop
 // [BETA API] Missing Demo code. API may evolve.
 // BeginDragDropSource call when the current item is active. If this return true, you can call SetDragDropPayload() + EndDragDropSource()
@@ -761,6 +1006,77 @@ func IsItemHoveredV(flags int) bool {
 // IsItemHovered calls IsItemHoveredV(HoveredFlagsDefault)
 func IsItemHovered() bool {
 	return IsItemHoveredV(HoveredFlagsDefault)
+}
+
+// IsKeyPressed returns true if the corresponding key is currently pressed.
+func IsKeyPressed(key int) bool {
+	return C.iggIsKeyPressed(C.int(key)) != 0
+}
+
+// Columns calls ColumnsV(count, label, ColumnsFlagsNone).
+func Columns(count int, label string) {
+	ColumnsV(count, label, ColumnsFlagsNone)
+}
+
+// ColumnsV creates a column layout of the specified number of columns.
+func ColumnsV(count int, label string, flags int32) {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	C.iggBeginColumns(C.int(count), labelArg, C.int(flags))
+}
+
+// NextColumn next column, defaults to current row or next row if the current row is finished.
+func NextColumn() {
+	C.iggNextColumn()
+}
+
+// ColumnIndex get current column index.
+func ColumnIndex() int {
+	return int(C.iggGetColumnIndex())
+}
+
+// ColumnWidth calls ColumnWidthV(-1).
+func ColumnWidth() int {
+	return ColumnWidthV(-1)
+}
+
+// ColumnWidthV get column width (in pixels). pass -1 to use current column.
+func ColumnWidthV(index int) int {
+	return int(C.iggGetColumnWidth(C.int(index)))
+}
+
+// SetColumnWidth sets column width (in pixels). pass -1 to use current column.
+func SetColumnWidth(index int, width float32) {
+	C.iggSetColumnWidth(C.int(index), C.float(width))
+}
+
+// ColumnOffset calls ColumnOffsetV(-1)
+func ColumnOffset() float32 {
+	return ColumnOffsetV(-1)
+}
+
+// ColumnOffsetV get position of column line (in pixels, from the left side of the contents region). pass -1 to use
+// current column, otherwise 0..GetColumnsCount() inclusive. column 0 is typically 0.0.
+func ColumnOffsetV(index int) float32 {
+	return float32(C.iggGetColumnOffset(C.int(index)))
+}
+
+// SetColumnOffset set position of column line (in pixels, from the left side of the contents region). pass -1 to use
+// current column.
+func SetColumnOffset(index int, offsetX float32) {
+	C.iggSetColumnOffset(C.int(index), C.float(offsetX))
+}
+
+// ColumnsCount returns number of current columns.
+func ColumnsCount() int {
+	return int(C.iggGetColumnsCount())
+}
+
+// SetScrollHereY adjusts scrolling amount to make current cursor position visible.
+// ratio=0.0: top, 0.5: center, 1.0: bottom.
+// When using to make a "default/current item" visible, consider using SetItemDefaultFocus() instead.
+func SetScrollHereY(ratio float32) {
+	C.iggSetScrollHereY(C.float(ratio))
 }
 
 // SetItemAllowOverlap allow last item to be overlapped by a subsequent item. sometimes useful with invisible buttons, selectables, etc. to catch unused area.

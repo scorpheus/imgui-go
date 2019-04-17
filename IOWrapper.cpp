@@ -2,6 +2,8 @@
 #include "IOWrapper.h"
 #include "WrapperConverter.h"
 
+#include <string>
+
 IggBool iggWantCaptureMouse(IggIO handle)
 {
    ImGuiIO *io = reinterpret_cast<ImGuiIO *>(handle);
@@ -65,54 +67,62 @@ void iggIoSetFontGlobalScale(IggIO handle, float value)
 
 void iggIoKeyPress(IggIO handle, int key)
 {
-   ImGuiIO & io = *reinterpret_cast<ImGuiIO *>(handle);
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
    io.KeysDown[key] = true;
 }
 
 void iggIoKeyRelease(IggIO handle, int key)
 {
-   ImGuiIO & io = *reinterpret_cast<ImGuiIO *>(handle);
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
    io.KeysDown[key] = false;
 }
 
 void iggIoKeyMap(IggIO handle, int imguiKey, int nativeKey)
 {
-   ImGuiIO & io = *reinterpret_cast<ImGuiIO *>(handle);
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
    io.KeyMap[imguiKey] = nativeKey;
 }
 
-void iggIoKeyCtrl(IggIO handle, int leftCtrl, int rigthCtrl)
+void iggIoKeyCtrl(IggIO handle, int leftCtrl, int rightCtrl)
 {
-   ImGuiIO & io = *reinterpret_cast<ImGuiIO *>(handle);
-   io.KeyCtrl = io.KeysDown[leftCtrl] || io.KeysDown[rigthCtrl];
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
+   io.KeyCtrl = io.KeysDown[leftCtrl] || io.KeysDown[rightCtrl];
 }
 
 IggBool iggIoKeyCtrlPressed(IggIO handle)
 {
-   ImGuiIO & io = *reinterpret_cast<ImGuiIO *>(handle); 
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle); 
    return io.KeyCtrl ? 1 : 0;
 }
 
 void iggIoKeyShift(IggIO handle, int leftShift, int rightShift)
 {
-   ImGuiIO & io = *reinterpret_cast<ImGuiIO *>(handle);
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
    io.KeyShift = io.KeysDown[leftShift] || io.KeysDown[rightShift];
 }
 
-void iggIoKeyAlt(IggIO handle,int leftAlt, int rightAlt)
+void iggIoKeyAlt(IggIO handle, int leftAlt, int rightAlt)
 {
-   ImGuiIO & io = *reinterpret_cast<ImGuiIO *>(handle);
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
    io.KeyAlt = io.KeysDown[leftAlt] || io.KeysDown[rightAlt];
 }
 
 void iggIoKeySuper(IggIO handle, int leftSuper, int rightSuper)
 {
-   ImGuiIO & io = *reinterpret_cast<ImGuiIO *>(handle);
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
    io.KeySuper = io.KeysDown[leftSuper] || io.KeysDown[rightSuper];
 }
 
-void iggIoAddInputCharactersUTF8(IggIO handle, const char *utf8_char)
+void iggIoAddInputCharactersUTF8(IggIO handle, char const *utf8Chars)
 {
-   ImGuiIO & io = *reinterpret_cast<ImGuiIO *>(handle);
-   io.AddInputCharactersUTF8(utf8_char);
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
+   io.AddInputCharactersUTF8(utf8Chars);
+}
+
+void iggIoSetIniFilename(IggIO handle, char const *value)
+{
+   static std::string bufferValue;
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
+   bufferValue = (value != nullptr) ? value : "";
+   io.IniFilename = bufferValue.empty() ? nullptr : bufferValue.c_str();
 }

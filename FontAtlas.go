@@ -10,7 +10,7 @@ type Alpha8Image struct {
 	Pixels        unsafe.Pointer
 }
 
-// RGBA32Image represents a imgui backed 32-bit rgba value image.
+// RGBA32Image represents a imgui backed 32-bit RGBA (8 bits per channel) value image.
 type RGBA32Image struct {
 	Width, Height int
 	Pixels        unsafe.Pointer
@@ -24,6 +24,49 @@ func (atlas FontAtlas) handle() C.IggFontAtlas {
 	return C.IggFontAtlas(atlas)
 }
 
+// GlyphRangesDefault describes Basic Latin, Extended Latin.
+func (atlas FontAtlas) GlyphRangesDefault() GlyphRanges {
+	return GlyphRanges(C.iggGetGlyphRangesDefault(atlas.handle()))
+}
+
+// GlyphRangesKorean describes Default + Korean characters.
+func (atlas FontAtlas) GlyphRangesKorean() GlyphRanges {
+	return GlyphRanges(C.iggGetGlyphRangesKorean(atlas.handle()))
+}
+
+// GlyphRangesJapanese describes Default + Hiragana, Katakana, Half-Width, Selection of 1946 Ideographs.
+func (atlas FontAtlas) GlyphRangesJapanese() GlyphRanges {
+	return GlyphRanges(C.iggGetGlyphRangesJapanese(atlas.handle()))
+}
+
+// GlyphRangesChinese calls GlyphRangesChineseFull() for compatibility reasons.
+// Deprecated: This function will be removed with v2.x.x ; Use GlyphRangesChineseFull instead.
+func (atlas FontAtlas) GlyphRangesChinese() GlyphRanges {
+	return atlas.GlyphRangesChineseFull()
+}
+
+// GlyphRangesChineseFull describes Default + Half-Width + Japanese Hiragana/Katakana + full set of about 21000 CJK
+// Unified Ideographs.
+func (atlas FontAtlas) GlyphRangesChineseFull() GlyphRanges {
+	return GlyphRanges(C.iggGetGlyphRangesChineseFull(atlas.handle()))
+}
+
+// GlyphRangesChineseSimplifiedCommon describes Default + Half-Width + Japanese Hiragana/Katakana + set of 2500 CJK
+// Unified Ideographs for common simplified Chinese.
+func (atlas FontAtlas) GlyphRangesChineseSimplifiedCommon() GlyphRanges {
+	return GlyphRanges(C.iggGetGlyphRangesChineseSimplifiedCommon(atlas.handle()))
+}
+
+// GlyphRangesCyrillic describes Default + about 400 Cyrillic characters.
+func (atlas FontAtlas) GlyphRangesCyrillic() GlyphRanges {
+	return GlyphRanges(C.iggGetGlyphRangesCyrillic(atlas.handle()))
+}
+
+// GlyphRangesThai describes Default + Thai characters.
+func (atlas FontAtlas) GlyphRangesThai() GlyphRanges {
+	return GlyphRanges(C.iggGetGlyphRangesThai(atlas.handle()))
+}
+
 // AddFontDefault adds the default font to the atlas. This is done by default if you do not call any
 // of the AddFont* methods before retrieving the texture data.
 func (atlas FontAtlas) AddFontDefault() Font {
@@ -31,18 +74,38 @@ func (atlas FontAtlas) AddFontDefault() Font {
 	return Font(fontHandle)
 }
 
-// AddFontFromFileTTF attempts to load a font from given TTF file.
-func (atlas FontAtlas) AddFontFromFileTTF(filename string, sizePixels float32) Font {
+// AddFontDefaultV adds the default font to the atlas using the specified FontConfig.
+func (atlas FontAtlas) AddFontDefaultV(cfg FontConfig) Font {
+	fontHandle := C.iggAddFontDefaultV(atlas.handle(), cfg.handle())
+	return Font(fontHandle)
+}
+
+// AddFontFromFileTTFV attempts to load a font from given TTF file.
+func (atlas FontAtlas) AddFontFromFileTTFV(filename string, sizePixels float32,
+	config FontConfig, glyphRange GlyphRanges) Font {
 	filenameArg, filenameFin := wrapString(filename)
 	defer filenameFin()
-	fontHandle := C.iggAddFontFromFileTTF(atlas.handle(), filenameArg, C.float(sizePixels))
+	fontHandle := C.iggAddFontFromFileTTF(atlas.handle(), filenameArg, C.float(sizePixels),
+		config.handle(), glyphRange.handle())
 	return Font(fontHandle)
+}
+
+// AddFontFromFileTTF calls AddFontFromFileTTFV(filename, sizePixels, DefaultFontConfig, EmptyGlyphRanges).
+func (atlas FontAtlas) AddFontFromFileTTF(filename string, sizePixels float32) Font {
+	return atlas.AddFontFromFileTTFV(filename, sizePixels, DefaultFontConfig, EmptyGlyphRanges)
 }
 
 // AddFontFromMemoryTTF // Note: Transfer ownership of 'ttf_data' to ImFontAtlas! Will be deleted after Build(). Set font_cfg->FontDataOwnedByAtlas to false to keep ownership.
 func (atlas FontAtlas) AddFontFromMemoryTTF(data []byte, sizePixels float32) Font {
 	fontHandle := C.iggAddFontFromMemoryTTF(atlas.handle(), unsafe.Pointer(&data[0]), C.int(len(data)), C.float(sizePixels))
 	return Font(fontHandle)
+}
+
+// SetTexDesiredWidth registers the width desired by user before building the image. Must be a power-of-two.
+// If have many glyphs your graphics API have texture size restrictions you may want to increase texture width to decrease height.
+// Set to 0 by default, causing auto-calculation.
+func (atlas FontAtlas) SetTexDesiredWidth(value int) {
+	C.iggFontAtlasSetTexDesiredWidth(atlas.handle(), C.int(value))
 }
 
 // TextureDataAlpha8 returns the image in 8-bit alpha values for the font atlas.
@@ -61,7 +124,7 @@ func (atlas FontAtlas) TextureDataAlpha8() *Alpha8Image {
 	}
 }
 
-// TexDataAsRGBA32 returns the image in 8-bit alpha values for the font atlas.
+// TextureDataRGBA32 returns the image in 32-bit RGBA values for the font atlas.
 // The returned image is valid as long as the font atlas is.
 func (atlas FontAtlas) TextureDataRGBA32() *RGBA32Image {
 	var pixels *C.uchar

@@ -28,10 +28,11 @@ extern void iggEnd(void);
 extern IggBool iggBeginChild(char const *id, IggVec2 const *size, IggBool border, int flags);
 extern void iggEndChild(void);
 
-extern float iggGetWindowWidth();
-extern float iggGetWindowHeight();
-extern void iggGetContentRegionMax(IggVec2 *out);
-extern void iggGetContentRegionAvail(IggVec2 *out);
+extern void iggWindowPos(IggVec2 *pos);
+extern void iggWindowSize(IggVec2 *size);
+extern float iggWindowWidth(void);
+extern float iggWindowHeight(void);
+extern void iggContentRegionAvail(IggVec2 *size);
 
 extern void iggSetNextWindowPos(IggVec2 const *pos, int cond, IggVec2 const *pivot);
 extern void iggSetNextWindowSize(IggVec2 const *size, int cond);
@@ -49,8 +50,11 @@ extern void iggPushStyleVarFloat(int index, float value);
 extern void iggPushStyleVarVec2(int index, IggVec2 const *value);
 extern void iggPopStyleVar(int count);
 
+extern float iggGetFontSize();
+
 extern void iggPushItemWidth(float width);
 extern void iggPopItemWidth(void);
+extern float iggCalcItemWidth(void);
 extern void iggPushTextWrapPos(float wrapPosX);
 extern void iggPopTextWrapPos(void);
 
@@ -59,7 +63,6 @@ extern void iggPopID(void);
 
 extern void iggTextUnformatted(char const *text);
 extern void iggLabelText(char const *label, char const *text);
-extern IggBool iggInputText(char const *label, char *text, int text_size);
 
 extern IggBool iggButton(char const *label, IggVec2 const *size);
 extern void iggImage(IggTextureID textureID,
@@ -70,20 +73,40 @@ extern IggBool iggImageButton(IggTextureID textureID,
 	int framePadding, IggVec4 const *bgCol,
 	IggVec4 const *tintCol);
 extern IggBool iggCheckbox(char const *label, IggBool *selected);
+extern void iggProgressBar(float fraction, IggVec2 const *size, char const *overlay);
 
 extern IggBool iggBeginCombo(char const *label, char const *previewValue, int flags);
 extern void iggEndCombo(void);
 
+extern IggBool iggDragFloat(char const *label, float *value, float speed, float min, float max, char const *format, float power);
+extern IggBool iggDragInt(char const *label, int *value, float speed, int min, int max, char const *format);
+
+extern IggBool iggSliderFloat(char const *label, float *value, float minValue, float maxValue, char const *format, float power);
+extern IggBool iggSliderFloatN(char const *label, float *value, int n, float minValue, float maxValue, char const *format, float power);
+
 extern IggBool iggSliderInt(char const *label, int *value, int minValue, int maxValue, char const *format);
 
 extern IggBool iggSplitter(IggBool split_vertically, float thickness, float *size1, float *size2);
+
+extern IggBool iggInputText(char const* label, char* buf, unsigned int bufSize, int flags, int callbackKey);
+extern IggBool iggInputTextMultiline(char const* label, char* buf, unsigned int bufSize, IggVec2 const *size, int flags, int callbackKey);
+
 extern void iggSeparator(void);
 extern void iggSameLine(float posX, float spacingW);
 extern void iggSpacing(void);
 extern void iggDummy(IggVec2 const *size);
 extern void iggBeginGroup(void);
 extern void iggEndGroup(void);
+
+extern void iggCursorPos(IggVec2 *pos);
+extern float iggCursorPosX(void);
+extern float iggCursorPosY(void);
+extern void iggCursorStartPos(IggVec2 *pos);
+extern void iggCursorScreenPos(IggVec2 *pos);
+
 extern void iggSetCursorPos(IggVec2 const *localPos);
+extern void iggSetCursorScreenPos(IggVec2 const *absPos);
+extern void iggAlignTextToFramePadding();
 extern float iggGetTextLineHeight(void);
 extern float iggGetTextLineHeightWithSpacing(void);
 extern float iggGetFrameHeight();
@@ -96,6 +119,10 @@ extern void iggSetNextTreeNodeOpen(IggBool open, int cond);
 extern IggBool iggCollapsingHeader(const char* label, IggBool p_open);
 
 extern IggBool iggSelectable(char const *label, IggBool selected, int flags, IggVec2 const *size);
+extern IggBool iggListBoxV(char const *label, int *currentItem, char const *const items[], int itemCount, int heightItems);
+
+extern void iggPlotLines(const char* label, const float* values, int valuesCount, int valuesOffset, const char* overlayText, float scaleMin, float scaleMax, IggVec2 const *graphSize);
+extern void iggPlotHistogram(const char* label, const float* values, int valuesCount, int valuesOffset, const char* overlayText, float scaleMin, float scaleMax, IggVec2 const *graphSize);
 
 extern void iggSetTooltip(char const *text);
 extern void iggBeginTooltip(void);
@@ -115,14 +142,20 @@ extern IggBool iggBeginPopupContextItem(char const *label, int mouseButton);
 extern void iggEndPopup(void);
 extern void iggCloseCurrentPopup(void);
 
-extern void iggColumns(int count, const char* id, IggBool border);
+extern IggBool iggIsItemHovered(int flags);
+extern void iggSetItemAllowOverlap();
+
+extern IggBool iggIsKeyPressed(int key);
+
+extern void iggBeginColumns(int count, char const *label, int flags);
 extern void iggNextColumn();
 extern int iggGetColumnIndex();
-extern float iggGetColumnWidth(int column_index);
-extern void iggSetColumnWidth(int column_index, float width);
-extern float iggGetColumnOffset(int column_index);
-extern void iggSetColumnOffset(int column_index, float offset_x);
+extern int iggGetColumnWidth(int index);
+extern void iggSetColumnWidth(int index, float width);
+extern float iggGetColumnOffset(int index);
+extern void iggSetColumnOffset(int index, float offsetX);
 extern int iggGetColumnsCount();
+extern void iggSetScrollHereY(float centerYRatio);
 
 extern IggBool iggBeginDragDropSource(int flags);
 extern IggBool iggSetDragDropPayload(const char* type, const char* data, int size);
@@ -131,14 +164,10 @@ extern IggBool iggBeginDragDropTarget();
 extern void iggAcceptDragDropPayload(const char* type, int flags, char* payload_out, int size_out);
 extern void iggEndDragDropTarget();
 
-extern IggBool  iggIsItemHovered(int flags);
-extern void iggSetItemAllowOverlap();
-
 extern void iggCalcTextSize(const char* text, IggVec2 *out);
 
 extern IggBool iggIsMouseClicked(int button, IggBool repeat);
 extern IggBool iggIsMouseDoubleClicked(int button);
-
 #ifdef __cplusplus
 }
 #endif

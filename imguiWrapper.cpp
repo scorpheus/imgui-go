@@ -92,20 +92,29 @@ void iggEndChild(void)
    ImGui::EndChild();
 }
 
-float iggGetWindowWidth(){
-    return ImGui::GetWindowWidth();
-}
-float iggGetWindowHeight(){
-    return ImGui::GetWindowHeight();
+void iggWindowPos(IggVec2 *pos)
+{
+   exportValue(*pos, ImGui::GetWindowPos());
 }
 
-void iggGetContentRegionMax(IggVec2 *out){
-    ImVec2 im_out = ImGui::GetContentRegionMax();
-    exportValue(*out, im_out);
+void iggWindowSize(IggVec2 *size)
+{
+   exportValue(*size, ImGui::GetWindowSize());
 }
-void iggGetContentRegionAvail(IggVec2 *out){
-    ImVec2 im_out = ImGui::GetContentRegionAvail();
-    exportValue(*out, im_out);
+
+float iggWindowWidth(void)
+{
+   return ImGui::GetWindowWidth();
+}
+
+float iggWindowHeight(void)
+{
+   return ImGui::GetWindowHeight();
+}
+
+void iggContentRegionAvail(IggVec2 *size)
+{
+   exportValue(*size, ImGui::GetContentRegionAvail());
 }
 
 void iggSetNextWindowPos(IggVec2 const *pos, int cond, IggVec2 const *pivot)
@@ -142,11 +151,6 @@ void iggSetNextWindowFocus(void)
 void iggSetNextWindowBgAlpha(float value)
 {
    ImGui::SetNextWindowBgAlpha(value);
-}
-
-void iggSetScrollHere(float center_y_ratio)
-{
-   ImGui::SetScrollHere(center_y_ratio);
 }
 
 void iggPushFont(IggFont handle)
@@ -187,6 +191,11 @@ void iggPopStyleVar(int count)
    ImGui::PopStyleVar(count);
 }
 
+float iggGetFontSize()
+{
+   return ImGui::GetFontSize();
+}
+
 void iggPushItemWidth(float width)
 {
    ImGui::PushItemWidth(width);
@@ -195,6 +204,11 @@ void iggPushItemWidth(float width)
 void iggPopItemWidth(void)
 {
    ImGui::PopItemWidth();
+}
+
+float iggCalcItemWidth(void)
+{
+   return ImGui::CalcItemWidth();
 }
 
 void iggPushTextWrapPos(float wrapPosX)
@@ -226,11 +240,6 @@ void iggLabelText(char const *label, char const *text)
    ImGui::LabelText(label, "%s", text);
 }
 
-IggBool iggInputText(char const *label, char *text, int text_size)
-{
-   return ImGui::InputText(label, text, text_size) ? 1 : 0;
-}
-
 IggBool iggButton(char const *label, IggVec2 const *size)
 {
    Vec2Wrapper sizeArg(size);
@@ -238,8 +247,8 @@ IggBool iggButton(char const *label, IggVec2 const *size)
 }
 
 void iggImage(IggTextureID textureID,
-   IggVec2 const *size, IggVec2 const *uv0, IggVec2 const *uv1,
-   IggVec4 const *tintCol, IggVec4 const *borderCol)
+              IggVec2 const *size, IggVec2 const *uv0, IggVec2 const *uv1,
+              IggVec4 const *tintCol, IggVec4 const *borderCol)
 {
    Vec2Wrapper sizeArg(size);
    Vec2Wrapper uv0Arg(uv0);
@@ -250,9 +259,9 @@ void iggImage(IggTextureID textureID,
 }
 
 IggBool iggImageButton(IggTextureID textureID,
-   IggVec2 const *size, IggVec2 const *uv0, IggVec2 const *uv1,
-   int framePadding, IggVec4 const *bgCol,
-   IggVec4 const *tintCol)
+                       IggVec2 const *size, IggVec2 const *uv0, IggVec2 const *uv1,
+                       int framePadding, IggVec4 const *bgCol,
+                       IggVec4 const *tintCol)
 {
    Vec2Wrapper sizeArg(size);
    Vec2Wrapper uv0Arg(uv0);
@@ -268,6 +277,12 @@ IggBool iggCheckbox(char const *label, IggBool *selected)
    return ImGui::Checkbox(label, selectedArg) ? 1 : 0;
 }
 
+void iggProgressBar(float fraction, IggVec2 const *size, char const *overlay)
+{
+   Vec2Wrapper sizeArg(size);
+   ImGui::ProgressBar(fraction, *sizeArg, overlay);
+}
+
 IggBool iggBeginCombo(char const *label, char const *previewValue, int flags)
 {
    return ImGui::BeginCombo(label, previewValue, flags) ? 1 : 0;
@@ -276,6 +291,26 @@ IggBool iggBeginCombo(char const *label, char const *previewValue, int flags)
 void iggEndCombo(void)
 {
    ImGui::EndCombo();
+}
+
+IggBool iggDragFloat(char const *label, float *value, float speed, float min, float max, char const *format, float power)
+{
+   return ImGui::DragFloat(label, value, speed, min, max, format, power) ? 1 : 0;
+}
+
+IggBool iggDragInt(char const *label, int *value, float speed, int min, int max, char const *format)
+{
+   return ImGui::DragInt(label, value, speed, min, max, format) ? 1 : 0;
+}
+
+IggBool iggSliderFloat(char const *label, float *value, float minValue, float maxValue, char const *format, float power)
+{
+   return ImGui::SliderFloat(label, value, minValue, maxValue, format, power) ? 1 : 0;
+}
+
+IggBool iggSliderFloatN(char const *label, float *value, int n, float minValue, float maxValue, char const *format, float power)
+{
+   return ImGui::SliderScalarN(label, ImGuiDataType_Float, (void *)value, n, &minValue, &maxValue, format, power) ? 1 : 0;
 }
 
 IggBool iggSliderInt(char const *label, int *value, int minValue, int maxValue, char const *format)
@@ -292,7 +327,27 @@ IggBool iggSplitter(IggBool split_vertically, float thickness, float *size1, flo
     ImRect bb;
     bb.Min = window->DC.CursorPos + (split_vertically != 0 ? ImVec2(*size1, 0.0f) : ImVec2(0.0f, *size1));
     bb.Max = bb.Min + CalcItemSize(split_vertically != 0 ? ImVec2(thickness, -1.f) : ImVec2(-1.f, thickness), 0.0f, 0.0f);
-    return SplitterBehavior(id, bb, split_vertically != 0 ? ImGuiAxis_X : ImGuiAxis_Y, size1, size2, 8.f, 8.f, 0.0f);
+    return SplitterBehavior(bb, id, split_vertically != 0 ? ImGuiAxis_X : ImGuiAxis_Y, size1, size2, 8.f, 8.f, 0.0f);
+}
+
+extern "C" int iggInputTextCallback(IggInputTextCallbackData data, int key);
+
+static int iggInputTextCallbackWrapper(ImGuiInputTextCallbackData *data)
+{
+   return iggInputTextCallback(reinterpret_cast<IggInputTextCallbackData>(data), static_cast<int>(reinterpret_cast<size_t>(data->UserData)));
+}
+
+IggBool iggInputText(char const *label, char* buf, unsigned int bufSize, int flags, int callbackKey)
+{
+   return ImGui::InputText(label, buf, static_cast<size_t>(bufSize), flags,
+                           iggInputTextCallbackWrapper, reinterpret_cast<void *>(callbackKey)) ? 1 : 0;
+}
+
+IggBool iggInputTextMultiline(char const *label, char* buf, unsigned int bufSize, IggVec2 const *size, int flags, int callbackKey)
+{
+   Vec2Wrapper sizeArg(size);
+   return ImGui::InputTextMultiline(label, buf, static_cast<size_t>(bufSize), *sizeArg, flags,
+                                    iggInputTextCallbackWrapper, reinterpret_cast<void *>(callbackKey)) ? 1 : 0;
 }
 
 void iggSeparator(void)
@@ -326,10 +381,46 @@ void iggEndGroup(void)
    ImGui::EndGroup();
 }
 
+void iggCursorPos(IggVec2 *pos)
+{
+   exportValue(*pos, ImGui::GetCursorPos());
+}
+
+float iggCursorPosX(void)
+{
+   return ImGui::GetCursorPosX();
+}
+
+float iggCursorPosY(void)
+{
+   return ImGui::GetCursorPosY();
+}
+
+void iggCursorStartPos(IggVec2 *pos)
+{
+   exportValue(*pos, ImGui::GetCursorStartPos());
+}
+
+void iggCursorScreenPos(IggVec2 *pos)
+{
+   exportValue(*pos, ImGui::GetCursorScreenPos());
+}
+
 void iggSetCursorPos(IggVec2 const *localPos)
 {
    Vec2Wrapper localPosArg(localPos);
    ImGui::SetCursorPos(*localPosArg);
+}
+
+void iggSetCursorScreenPos(IggVec2 const *absPos)
+{
+   Vec2Wrapper absPosArg(absPos);
+   ImGui::SetCursorScreenPos(*absPosArg);
+}
+
+void iggAlignTextToFramePadding()
+{
+   ImGui::AlignTextToFramePadding();
 }
 
 float iggGetTextLineHeight(void)
@@ -377,6 +468,23 @@ IggBool iggSelectable(char const *label, IggBool selected, int flags, IggVec2 co
 {
    Vec2Wrapper sizeArg(size);
    return ImGui::Selectable(label, selected != 0, flags, *sizeArg) ? 1 : 0;
+}
+
+IggBool iggListBoxV(char const *label, int *currentItem, char const *const items[], int itemsCount, int heightItems)
+{
+   return ImGui::ListBox(label, currentItem, items, itemsCount, heightItems) ? 1 : 0;
+}
+
+void iggPlotLines(char const *label, float const *values, int valuesCount, int valuesOffset, char const *overlayText, float scaleMin, float scaleMax, IggVec2 const *graphSize)
+{
+   Vec2Wrapper graphSizeArg(graphSize);
+   ImGui::PlotLines(label, values, valuesCount, valuesOffset, overlayText, scaleMin, scaleMax, *graphSizeArg);
+}
+
+void iggPlotHistogram(char const *label, float const *values, int valuesCount, int valuesOffset, char const *overlayText, float scaleMin, float scaleMax, IggVec2 const *graphSize)
+{
+   Vec2Wrapper graphSizeArg(graphSize);
+   ImGui::PlotHistogram(label, values, valuesCount, valuesOffset, overlayText, scaleMin, scaleMax, *graphSizeArg);
 }
 
 void iggSetTooltip(char const *text)
@@ -455,45 +563,6 @@ void iggCloseCurrentPopup(void)
    ImGui::CloseCurrentPopup();
 }
 
-void iggColumns(int count, const char* id, IggBool border)
-{
-   ImGui::Columns(count, id, border != 0);
-}
-
-void iggNextColumn()
-{
-   ImGui::NextColumn();
-}
-
-int iggGetColumnIndex()
-{
-   return ImGui::GetColumnIndex();
-}
-
-float iggGetColumnWidth(int column_index)
-{
-   return ImGui::GetColumnWidth(column_index);
-}
-
-void iggSetColumnWidth(int column_index, float width)
-{
-   ImGui::SetColumnWidth(column_index, width);
-}
-
-float iggGetColumnOffset(int column_index)
-{
-   return ImGui::GetColumnOffset(column_index);
-}
-
-void iggSetColumnOffset(int column_index, float offset_x)
-{
-   ImGui::SetColumnOffset(column_index, offset_x);
-}
-
-int iggGetColumnsCount()
-{
-    return ImGui::GetColumnsCount();
-}
 
 IggBool iggBeginDragDropSource(int flags){
     return ImGui::BeginDragDropSource(flags) ? 1 : 0;
@@ -520,7 +589,58 @@ IggBool iggIsItemHovered(int flags)
 {
    return ImGui::IsItemHovered(flags) ? 1 : 0;
 }
- void iggSetItemAllowOverlap()
+
+IggBool iggIsKeyPressed(int key)
+{
+   return ImGui::IsKeyPressed(key);
+}
+
+void iggBeginColumns(int count, char const *label, int flags)
+{
+   ImGui::Columns(count, label, flags);
+}
+
+void iggNextColumn()
+{
+   ImGui::NextColumn();
+}
+
+int iggGetColumnIndex()
+{
+   return ImGui::GetColumnIndex();
+}
+
+int iggGetColumnWidth(int index)
+{
+   return ImGui::GetColumnWidth(index);
+}
+
+void iggSetColumnWidth(int index, float width)
+{
+   ImGui::SetColumnWidth(index, width);
+}
+
+float iggGetColumnOffset(int index)
+{
+   return ImGui::GetColumnOffset(index);
+}
+
+void iggSetColumnOffset(int index, float offsetX)
+{
+   ImGui::SetColumnOffset(index, offsetX);
+}
+
+int iggGetColumnsCount()
+{
+   return ImGui::GetColumnsCount();
+}
+
+void iggSetScrollHereY(float centerYRatio)
+{
+   ImGui::SetScrollHereY(centerYRatio);
+}
+
+void iggSetItemAllowOverlap()
 {
    ImGui::SetItemAllowOverlap();
 }
@@ -537,3 +657,4 @@ IggBool iggIsMouseClicked(int button, IggBool repeat){
 IggBool iggIsMouseDoubleClicked(int button){
     return ImGui::IsMouseDoubleClicked(button) ? 1 : 0;    
 }
+
