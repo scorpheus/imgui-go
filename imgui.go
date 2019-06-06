@@ -86,6 +86,19 @@ func ShowUserGuide() {
 	C.iggShowUserGuide()
 }
 
+// StyleColorsDark new, recommended style (default)
+func StyleColorsDark() {
+	C.iggStyleColorsDark()
+}
+// StyleColorsClassic classic imgui style
+func StyleColorsClassic() {
+	C.iggStyleColorsClassic()
+}
+// StyleColorsLight best used with borders and a custom, thicker font
+func StyleColorsLight() {
+	C.iggStyleColorsLight()
+}
+
 // BeginV pushes a new window to the stack and start appending to it.
 // You may append multiple times to the same window during the same frame.
 // If the open argument is provided, the window can be closed, in which case the value will be false after the call.

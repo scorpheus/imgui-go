@@ -70,6 +70,21 @@ void iggShowUserGuide(void)
    ImGui::ShowUserGuide();
 }
 
+void iggStyleColorsDark()
+{
+    ImGui::StyleColorsDark();
+}
+
+void iggStyleColorsClassic()
+{
+   ImGui::StyleColorsClassic();
+}
+
+void iggStyleColorsLight()
+{
+   ImGui::StyleColorsLight();
+}
+
 IggBool iggBegin(char const *id, IggBool *open, int flags)
 {
    BoolWrapper openArg(open);

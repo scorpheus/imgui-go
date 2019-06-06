@@ -23,6 +23,10 @@ extern char const *iggGetVersion(void);
 extern void iggShowDemoWindow(IggBool *open);
 extern void iggShowUserGuide(void);
 
+void iggStyleColorsDark();
+void iggStyleColorsClassic();
+void iggStyleColorsLight();
+
 extern IggBool iggBegin(char const *id, IggBool *open, int flags);
 extern void iggEnd(void);
 extern IggBool iggBeginChild(char const *id, IggVec2 const *size, IggBool border, int flags);
