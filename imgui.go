@@ -721,6 +721,13 @@ func SetNextTreeNodeOpen(open bool, cond Condition) {
 	C.iggSetNextTreeNodeOpen(castBool(open), C.int(cond))
 }
 
+// TreeNodeToLabelSpacing returns the horizontal distance preceding label for a regular unframed TreeNode.
+
+
+func TreeNodeToLabelSpacing() float32 {
+	return float32(C.iggGetTreeNodeToLabelSpacing())
+}
+
 // CollapsingHeader
 func CollapsingHeader(label string, open bool) bool {
 	labelArg, labelFin := wrapString(label)
@@ -1021,9 +1028,56 @@ func IsItemHovered() bool {
 	return IsItemHoveredV(HoveredFlagsDefault)
 }
 
-// IsKeyPressed returns true if the corresponding key is currently pressed.
+// IsKeyDown returns true if the corresponding key is currently being held down.
+func IsKeyDown(key int) bool {
+	return C.iggIsKeyDown(C.int(key)) != 0
+}
+
+// IsKeyPressedV returns true if the corresponding key was pressed (went from !Down to Down).
+// If repeat=true and the key is being held down then the press is repeated using io.KeyRepeatDelay and KeyRepeatRate
+func IsKeyPressedV(key int, repeat bool) bool {
+	return C.iggIsKeyPressed(C.int(key), castBool(repeat)) != 0
+}
+
+// IsKeyPressed calls IsKeyPressedV(key, true).
 func IsKeyPressed(key int) bool {
-	return C.iggIsKeyPressed(C.int(key)) != 0
+	return IsKeyPressedV(key, true)
+}
+
+// IsKeyReleased returns true if the corresponding key was released (went from Down to !Down).
+func IsKeyReleased(key int) bool {
+	return C.iggIsKeyReleased(C.int(key)) != 0
+}
+
+// IsMouseDown returns true if the corresponding mouse button is currently being held down.
+func IsMouseDown(button int) bool {
+	return C.iggIsMouseDown(C.int(button)) != 0
+}
+
+// IsAnyMouseDown returns true if any mouse button is currently being held down.
+func IsAnyMouseDown() bool {
+	return C.iggIsAnyMouseDown() != 0
+}
+
+// IsMouseClickedV returns true if the mouse button was clicked (0=left, 1=right, 2=middle)
+// If repeat=true and the mouse button is being held down then the click is repeated using io.KeyRepeatDelay and KeyRepeatRate
+func IsMouseClickedV(button int, repeat bool) bool {
+	return C.iggIsMouseClicked(C.int(button), castBool(repeat)) != 0
+}
+
+// IsMouseClicked calls IsMouseClickedV(key, false).
+func IsMouseClicked(button int) bool {
+	return IsMouseClickedV(button, false)
+}
+
+// IsMouseReleased returns true if the mouse button was released (went from Down to !Down).
+func IsMouseReleased(button int) bool {
+	return C.iggIsMouseReleased(C.int(button)) != 0
+}
+
+// IsMouseDoubleClicked returns true if the mouse button was double-clicked (0=left, 1=right, 2=middle).
+func IsMouseDoubleClicked(button int) bool {
+	return C.iggIsMouseDoubleClicked(C.int(button)) != 0
 }
 
 // Columns calls ColumnsV(count, label, ColumnsFlagsNone).
@@ -1108,12 +1162,29 @@ func CalcTextSize(text string) Vec2 {
 	return out
 }
 
-// IsMouseClicked did mouse button clicked (went from !Down to Down)
-func IsMouseClicked(button int, repeat bool) bool {
-	return C.iggIsMouseClicked(C.int(button), castBool(repeat)) != 0
+
+// SetItemDefaultFocus makes the last item the default focused item of a window.
+func SetItemDefaultFocus() {
+	C.iggSetItemDefaultFocus()
 }
 
-// IsMouseDoubleClicked did mouse button double-clicked. a double-click returns false in IsMouseClicked(). uses io.MouseDoubleClickTime.
-func IsMouseDoubleClicked(button int) bool {
-	return C.iggIsMouseDoubleClicked(C.int(button)) != 0
+// IsItemFocused returns true if the last item is focused.
+func IsItemFocused() bool {
+	return C.iggIsItemFocused() != 0
+}
+
+// IsAnyItemFocused returns true if any item is focused.
+func IsAnyItemFocused() bool {
+	return C.iggIsAnyItemFocused() != 0
+}
+
+// MouseCursor returns desired cursor type, reset in imgui.NewFrame(), this is updated during the frame.
+// Valid before Render(). If you use software rendering by setting io.MouseDrawCursor ImGui will render those for you.
+func MouseCursor() int {
+	return int(C.iggGetMouseCursor())
+}
+
+// SetMouseCursor sets desired cursor type.
+func SetMouseCursor(cursor int) {
+	C.iggSetMouseCursor(C.int(cursor))
 }

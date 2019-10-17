@@ -119,6 +119,7 @@ extern float iggGetFrameHeightWithSpacing();
 extern IggBool iggTreeNode(char const *label, int flags);
 extern void iggTreePop(void);
 extern void iggSetNextTreeNodeOpen(IggBool open, int cond);
+extern float iggGetTreeNodeToLabelSpacing(void);
 
 extern IggBool iggCollapsingHeader(const char* label, IggBool p_open);
 
@@ -149,7 +150,14 @@ extern void iggCloseCurrentPopup(void);
 extern IggBool iggIsItemHovered(int flags);
 extern void iggSetItemAllowOverlap();
 
-extern IggBool iggIsKeyPressed(int key);
+extern IggBool iggIsKeyDown(int key);
+extern IggBool iggIsKeyPressed(int key, IggBool repeat);
+extern IggBool iggIsKeyReleased(int key);
+extern IggBool iggIsMouseDown(int button);
+extern IggBool iggIsAnyMouseDown();
+extern IggBool iggIsMouseClicked(int button, IggBool repeat);
+extern IggBool iggIsMouseReleased(int button);
+extern IggBool iggIsMouseDoubleClicked(int button);
 
 extern void iggBeginColumns(int count, char const *label, int flags);
 extern void iggNextColumn();
@@ -172,6 +180,13 @@ extern void iggCalcTextSize(const char* text, IggVec2 *out);
 
 extern IggBool iggIsMouseClicked(int button, IggBool repeat);
 extern IggBool iggIsMouseDoubleClicked(int button);
+extern void iggSetItemDefaultFocus();
+extern IggBool iggIsItemFocused();
+extern IggBool iggIsAnyItemFocused();
+extern int iggGetMouseCursor();
+extern void iggSetMouseCursor(int cursor);
+
+
 #ifdef __cplusplus
 }
 #endif

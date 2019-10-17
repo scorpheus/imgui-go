@@ -126,3 +126,44 @@ void iggIoSetIniFilename(IggIO handle, char const *value)
    bufferValue = (value != nullptr) ? value : "";
    io.IniFilename = bufferValue.empty() ? nullptr : bufferValue.c_str();
 }
+
+void iggIoSetConfigFlags(IggIO handle, int flags)
+{
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
+   io.ConfigFlags = flags;
+}
+
+void iggIoSetBackendFlags(IggIO handle, int flags)
+{
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
+   io.BackendFlags = flags;
+}
+
+extern "C" void iggIoSetClipboardText(IggIO handle, char *text);
+extern "C" char *iggIoGetClipboardText(IggIO handle);
+
+static void iggIoSetClipboardTextWrapper(void *userData, char const *text)
+{
+   iggIoSetClipboardText(userData, const_cast<char *>(text));
+}
+
+static char const *iggIoGetClipboardTextWrapper(void *userData)
+{
+   return iggIoGetClipboardText(userData);
+}
+
+void iggIoRegisterClipboardFunctions(IggIO handle)
+{
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
+   io.ClipboardUserData = handle;
+   io.GetClipboardTextFn = iggIoGetClipboardTextWrapper;
+   io.SetClipboardTextFn = iggIoSetClipboardTextWrapper;
+}
+
+void iggIoClearClipboardFunctions(IggIO handle)
+{
+   ImGuiIO &io = *reinterpret_cast<ImGuiIO *>(handle);
+   io.GetClipboardTextFn = nullptr;
+   io.SetClipboardTextFn = nullptr;
+   io.ClipboardUserData = nullptr;
+}
