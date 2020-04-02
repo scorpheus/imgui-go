@@ -41,6 +41,22 @@ func (vec Vec2) Minus(other Vec2) Vec2 {
 	}
 }
 
+// Multiply returns vec * other.
+func (vec Vec2) Multiply(other Vec2) Vec2 {
+	return Vec2{
+		X: vec.X * other.X,
+		Y: vec.Y * other.Y,
+	}
+}
+
+// Divide returns vec / other.
+func (vec Vec2) Divide(other Vec2) Vec2 {
+	return Vec2{
+		X: vec.X / other.X,
+		Y: vec.Y / other.Y,
+	}
+}
+
 // Times returns vec * value.
 func (vec Vec2) Times(value float32) Vec2 {
 	return Vec2{
