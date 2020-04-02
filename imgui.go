@@ -1028,6 +1028,11 @@ func IsItemHovered() bool {
 	return IsItemHoveredV(HoveredFlagsDefault)
 }
 
+// IsItemClicked is the last item clicked? (e.g. button/node just clicked on) == IsMouseClicked(mouse_button) && IsItemHovered()
+func IsItemClicked() bool {
+	return C.iggIsItemClicked() != 0
+}
+
 // IsKeyDown returns true if the corresponding key is currently being held down.
 func IsKeyDown(key int) bool {
 	return C.iggIsKeyDown(C.int(key)) != 0

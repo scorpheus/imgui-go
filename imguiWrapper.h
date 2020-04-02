@@ -148,6 +148,7 @@ extern void iggEndPopup(void);
 extern void iggCloseCurrentPopup(void);
 
 extern IggBool iggIsItemHovered(int flags);
+extern IggBool iggIsItemClicked();
 extern void iggSetItemAllowOverlap();
 
 extern IggBool iggIsKeyDown(int key);
