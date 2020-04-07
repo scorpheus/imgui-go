@@ -211,6 +211,11 @@ float iggGetFontSize()
    return ImGui::GetFontSize();
 }
 
+void iggCalcTextSize(const char* text, int length, IggBool hide_text_after_double_hash, float wrap_width, IggVec2 *value)
+{
+    exportValue(*value, ImGui::CalcTextSize(text, text + length, hide_text_after_double_hash, wrap_width));
+}
+
 void iggPushItemWidth(float width)
 {
    ImGui::PushItemWidth(width);
@@ -259,6 +264,12 @@ IggBool iggButton(char const *label, IggVec2 const *size)
 {
    Vec2Wrapper sizeArg(size);
    return ImGui::Button(label, *sizeArg) ? 1 : 0;
+}
+
+IggBool iggInvisibleButton(char const *label, IggVec2 const *size)
+{
+   Vec2Wrapper sizeArg(size);
+   return ImGui::InvisibleButton(label, *sizeArg) ? 1 : 0;
 }
 
 void iggImage(IggTextureID textureID,
@@ -345,6 +356,18 @@ IggBool iggSplitter(IggBool split_vertically, float thickness, float *size1, flo
     return SplitterBehavior(bb, id, split_vertically != 0 ? ImGuiAxis_X : ImGuiAxis_Y, size1, size2, 8.f, 8.f, 0.0f);
 }
 
+IggBool iggVSliderFloat(char const *label, IggVec2 const *size, float *value, float minValue, float maxValue, char const *format, float power)
+{
+   Vec2Wrapper sizeArg(size);
+   return ImGui::VSliderFloat(label, *sizeArg, value, minValue, maxValue, format, power) ? 1 : 0;
+}
+
+IggBool iggVSliderInt(char const *label, IggVec2 const *size, int *value, int minValue, int maxValue, char const *format)
+{
+   Vec2Wrapper sizeArg(size);
+   return ImGui::VSliderInt(label, *sizeArg, value, minValue, maxValue, format) ? 1 : 0;
+}
+
 extern "C" int iggInputTextCallback(IggInputTextCallbackData data, int key);
 
 static int iggInputTextCallbackWrapper(ImGuiInputTextCallbackData *data)
@@ -365,9 +388,29 @@ IggBool iggInputTextMultiline(char const *label, char* buf, unsigned int bufSize
                                     iggInputTextCallbackWrapper, reinterpret_cast<void *>(callbackKey)) ? 1 : 0;
 }
 
-IggBool iggInputInt(char const* label, int* v, int step, int step_fast, int flags)
+IggBool iggInputInt(char const *label, int *value, int step, int step_fast, int flags)
 {
-   return ImGui::InputInt(label, v, step, step_fast, flags) ? 1 : 0;
+   return ImGui::InputInt(label, value, step, step_fast, flags) ? 1 : 0;
+}
+
+IggBool iggColorEdit3(char const *label, float *col, int flags)
+{
+   return ImGui::ColorEdit3(label, col, flags) ? 1 : 0;
+}
+
+IggBool iggColorEdit4(char const *label, float *col, int flags)
+{
+   return ImGui::ColorEdit4(label, col, flags) ? 1 : 0;
+}
+
+IggBool iggColorPicker3(char const *label, float *col, int flags)
+{
+   return ImGui::ColorPicker3(label, col, flags) ? 1 : 0;
+}
+
+IggBool iggColorPicker4(char const *label, float *col, int flags)
+{
+   return ImGui::ColorPicker4(label, col, flags) ? 1 : 0;
 }
 
 void iggSeparator(void)
@@ -453,12 +496,12 @@ float iggGetTextLineHeightWithSpacing(void)
    return ImGui::GetTextLineHeightWithSpacing();
 }
 
-float iggGetFrameHeight()
+float iggGetFrameHeight(void)
 {
    return ImGui::GetFrameHeight();
 }
 
-float iggGetFrameHeightWithSpacing()
+float iggGetFrameHeightWithSpacing(void)
 {
    return ImGui::GetFrameHeightWithSpacing();
 }
@@ -473,9 +516,9 @@ void iggTreePop(void)
    ImGui::TreePop();
 }
 
-void iggSetNextTreeNodeOpen(IggBool open, int cond)
+void iggSetNextItemOpen(IggBool open, int cond)
 {
-   ImGui::SetNextTreeNodeOpen(open != 0, cond);
+   ImGui::SetNextItemOpen(open != 0, cond);
 }
 
  IggBool iggCollapsingHeader(const char* label, IggBool p_open)
@@ -621,6 +664,38 @@ IggBool iggIsItemClicked()
    return ImGui::IsItemClicked() ? 1 : 0;
 }
 
+IggBool iggIsItemActive()
+{
+   return ImGui::IsItemActive() ? 1 : 0;
+}
+
+IggBool iggIsAnyItemActive()
+{
+   return ImGui::IsAnyItemActive() ? 1 : 0;
+}
+
+IggBool iggIsItemVisible()
+{
+   return ImGui::IsItemVisible() ? 1 : 0;
+}
+
+IggBool iggIsWindowAppearing() {
+   return ImGui::IsWindowAppearing() ? 1 : 0;
+}
+
+IggBool iggIsWindowCollapsed() {
+   return ImGui::IsWindowCollapsed() ? 1 : 0;
+}
+
+IggBool iggIsWindowFocused(int flags)
+{
+   return ImGui::IsWindowFocused(flags) ? 1 : 0;
+}
+
+IggBool iggIsWindowHovered(int flags)
+{
+   return ImGui::IsWindowHovered(flags) ? 1 : 0;
+}
 IggBool iggIsKeyDown(int key)
 {
    return ImGui::IsKeyDown(key);
@@ -661,9 +736,14 @@ IggBool iggIsMouseDoubleClicked(int button)
    return ImGui::IsMouseDoubleClicked(button);
 }
 
-void iggBeginColumns(int count, char const *label, int flags)
+void iggMousePos(IggVec2 *pos)
 {
-   ImGui::Columns(count, label, flags);
+   exportValue(*pos, ImGui::GetMousePos());
+}
+
+void iggColumns(int count, char const *label, IggBool border)
+{
+   ImGui::Columns(count, label, border);
 }
 
 void iggNextColumn()
@@ -711,12 +791,6 @@ void iggSetItemAllowOverlap()
    ImGui::SetItemAllowOverlap();
 }
 
-void iggCalcTextSize(const char* text, IggVec2 *out)
-{    
-    ImVec2 im_out = ImGui::CalcTextSize(text, NULL, true); 
-    exportValue(*out, im_out);
-}
-
 void iggSetItemDefaultFocus()
 {
    ImGui::SetItemDefaultFocus();
@@ -740,4 +814,30 @@ int iggGetMouseCursor()
 void iggSetMouseCursor(int cursor)
 {
    ImGui::SetMouseCursor(cursor);
+}
+
+void iggSetKeyboardFocusHere(int offset)
+{
+   ImGui::SetKeyboardFocusHere(offset);
+}
+
+IggBool iggBeginTabBar(char const *str_id, int flags) {
+    return ImGui::BeginTabBar(str_id, flags) ? 1 : 0;
+}
+
+void iggEndTabBar() {
+    ImGui::EndTabBar();
+}
+
+IggBool iggBeginTabItem(char const *label, IggBool *p_open, int flags) {
+    BoolWrapper openArg(p_open);
+    return ImGui::BeginTabItem(label, openArg, flags) ? 1 : 0;
+}
+
+void iggEndTabItem() {
+    ImGui::EndTabItem();
+}
+
+void iggSetTabItemClosed(char const * tab_or_docked_window_label) {
+    ImGui::SetTabItemClosed(tab_or_docked_window_label);
 }

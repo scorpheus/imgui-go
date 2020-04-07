@@ -8,32 +8,6 @@ import (
 	"strings"
 )
 
-// User fill ImGuiIO.KeyMap[] array with indices into the ImGuiIO.KeysDown[512] array
-const (
-	KeyTab        = 0
-	KeyLeftArrow  = 1
-	KeyRightArrow = 2
-	KeyUpArrow    = 3
-	KeyDownArrow  = 4
-	KeyPageUp     = 5
-	KeyPageDown   = 6
-	KeyHome       = 7
-	KeyEnd        = 8
-	KeyInsert     = 9
-	KeyDelete     = 10
-	KeyBackspace  = 11
-	KeySpace      = 12
-	KeyEnter      = 13
-	KeyEscape     = 14
-	KeyA          = 15 // for text edit CTRL+A: select all
-	KeyC          = 16 // for text edit CTRL+C: copy
-	KeyV          = 17 // for text edit CTRL+V: paste
-	KeyX          = 18 // for text edit CTRL+X: cut
-	KeyY          = 19 // for text edit CTRL+Y: redo
-	KeyZ          = 20 // for text edit CTRL+Z: undo
-	KeyCOUNT      = 21
-)
-
 // Version returns a version string e.g. "1.23".
 func Version() string {
 	return C.GoString(C.iggGetVersion())
@@ -90,12 +64,10 @@ func ShowUserGuide() {
 func StyleColorsDark() {
 	C.iggStyleColorsDark()
 }
-
 // StyleColorsClassic classic imgui style
 func StyleColorsClassic() {
 	C.iggStyleColorsClassic()
 }
-
 // StyleColorsLight best used with borders and a custom, thicker font
 func StyleColorsLight() {
 	C.iggStyleColorsLight()
@@ -209,6 +181,8 @@ func SetNextWindowSize(size Vec2) {
 	SetNextWindowSizeV(size, 0)
 }
 
+
+
 // SetNextWindowSizeConstraints set next window size limits. use -1,-1 on either X/Y axis to preserve the current size. Use callback to apply non-trivial programmatic constraints.
 func SetNextWindowSizeConstraints(sizeMin Vec2, sizeMax Vec2) {
 	sizeMinArg, _ := sizeMin.wrapped()
@@ -216,7 +190,9 @@ func SetNextWindowSizeConstraints(sizeMin Vec2, sizeMax Vec2) {
 	C.iggSetNextWindowSizeConstraints(sizeMinArg, sizeMaxArg)
 }
 
-// SetNextWindowSizeConstraints   set next window content size (~ enforce the range of scrollbars). not including window decorations (title bar, menu bar, etc.). set an axis to 0.0f to leave it automatic. call before Begin()
+// SetNextWindowContentSize sets next window content size (~ enforce the range of scrollbars).
+// Does not include window decorations (title bar, menu bar, etc.).
+// Set one axis to 0.0 to leave it automatic. This function must be called before Begin() to take effect.
 func SetNextWindowContentSize(size Vec2) {
 	sizeArg, _ := size.wrapped()
 	C.iggSetNextWindowContentSize(sizeArg)
@@ -284,6 +260,20 @@ func PopStyleVar() {
 // FontSize returns the current font size (= height in pixels) of the current font with the current scale applied.
 func FontSize() float32 {
 	return float32(C.iggGetFontSize())
+}
+
+// CalcTextSize calculate the size of the text
+func CalcTextSize(text string, hideTextAfterDoubleHash bool, wrapWidth float32) Vec2 {
+	CString := newStringBuffer(text)
+	defer CString.free()
+
+	var vec2 Vec2
+	valueArg, returnFunc := vec2.wrapped()
+
+	C.iggCalcTextSize((*C.char)(CString.ptr), C.int(CString.size), castBool(hideTextAfterDoubleHash), C.float(wrapWidth), valueArg)
+	returnFunc()
+
+	return vec2
 }
 
 // PushItemWidth sets width of items for the common item+label case, in pixels.
@@ -363,6 +353,19 @@ func Button(id string) bool {
 	return ButtonV(id, Vec2{})
 }
 
+// InvisibleButtonV returning true if it is pressed.
+func InvisibleButtonV(id string, size Vec2) bool {
+	idArg, idFin := wrapString(id)
+	defer idFin()
+	sizeArg, _ := size.wrapped()
+	return C.iggInvisibleButton(idArg, sizeArg) != 0
+}
+
+// InvisibleButton calls InvisibleButtonV(id, Vec2{0,0}).
+func InvisibleButton(id string) bool {
+	return InvisibleButtonV(id, Vec2{})
+}
+
 // ImageV adds an image based on given texture ID.
 // Refer to TextureID what this represents and how it is drawn.
 func ImageV(id TextureID, size Vec2, uv0, uv1 Vec2, tintCol, borderCol Vec4) {
@@ -406,8 +409,8 @@ func Checkbox(id string, selected *bool) bool {
 	return C.iggCheckbox(idArg, selectedArg) != 0
 }
 
-// BeginComboV creates a combo box with complete control over the content to the user.
-// Call EndCombo() if this function returns true.
+// ProgressBarV creates a progress bar.
+// size (for each axis) < 0.0f: align to end, 0.0f: auto, > 0.0f: specified size
 func ProgressBarV(fraction float32, size Vec2, overlay string) {
 	sizeArg, _ := size.wrapped()
 	overlayArg, overlayFin := wrapString(overlay)
@@ -529,6 +532,40 @@ func Splitter(splitVertically bool, thickness float32, size1 *float32, size2 *fl
 	return C.iggSplitter(castBool(splitVertically), C.float(thickness), size1Arg, size2Arg) != 0
 }
 
+// VSliderFloatV creates a vertically oriented slider for floats.
+func VSliderFloatV(label string, size Vec2, value *float32, min, max float32, format string, power float32) bool {
+	sizeArg, _ := size.wrapped()
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	valueArg, valueFin := wrapFloat(value)
+	defer valueFin()
+	formatArg, formatFin := wrapString(format)
+	defer formatFin()
+	return C.iggVSliderFloat(labelArg, sizeArg, valueArg, C.float(min), C.float(max), formatArg, C.float(power)) != 0
+}
+
+// VSliderFloat calls VSliderFloatV(label, size, value, min, max, "%.3f", 1.0
+func VSliderFloat(label string, size Vec2, value *float32, min, max float32) bool {
+	return VSliderFloatV(label, size, value, min, max, "%.3f", 1.0)
+}
+
+// VSliderIntV creates a vertically oriented slider for integers.
+func VSliderIntV(label string, size Vec2, value *int32, min, max int32, format string) bool {
+	sizeArg, _ := size.wrapped()
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	valueArg, valueFin := wrapInt32(value)
+	defer valueFin()
+	formatArg, formatFin := wrapString(format)
+	defer formatFin()
+	return C.iggVSliderInt(labelArg, sizeArg, valueArg, C.int(min), C.int(max), formatArg) != 0
+}
+
+//VSliderInt calls VSliderIntV
+func VSliderInt(label string, size Vec2, value *int32, min, max int32) bool {
+	return VSliderIntV(label, size, value, min, max, "%d")
+}
+
 // InputTextV creates a text field for dynamic text input.
 //
 // Contrary to the original library, this wrapper does not limit the maximum number of possible characters.
@@ -588,19 +625,71 @@ func InputTextMultiline(label string, text *string) bool {
 	return InputTextMultilineV(label, text, Vec2{}, 0, nil)
 }
 
-// InputIntV creates a text field for int
-func InputIntV(label string, i *int32, step int, stepFast int, flags int) bool {
+// InputIntV ...
+func InputIntV(label string, value *int32, step int, stepFast int, flags int) bool {
 	labelArg, labelFin := wrapString(label)
 	defer labelFin()
-	valueArg, valueFin := wrapInt32(i)
+	valueArg, valueFin := wrapInt32(value)
 	defer valueFin()
 
 	return C.iggInputInt(labelArg, valueArg, C.int(step), C.int(stepFast), C.int(flags)) != 0
 }
 
-// InputInt calls InputIntV(label, int, 0, nil)
-func InputInt(label string, i *int32) bool {
-	return InputIntV(label, i, 1, 100, 0)
+// InputInt calls InputIntV(label, value, 1, 100, 0).
+func InputInt(label string, value *int32) bool {
+	return InputIntV(label, value, 1, 100, 0)
+}
+
+// ColorEdit3 calls ColorEdit3V(label, col, 0)
+func ColorEdit3(label string, col *[3]float32) bool {
+	return ColorEdit3V(label, col, 0)
+}
+
+// ColorEdit3V will show a clickable little square which will open a color picker window for 3D vector (rgb format).
+func ColorEdit3V(label string, col *[3]float32, flags int) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	ccol := (*C.float)(&col[0])
+	return C.iggColorEdit3(labelArg, ccol, C.int(flags)) != 0
+}
+
+// ColorEdit4 calls ColorEdit4V(label, col, 0)
+func ColorEdit4(label string, col *[4]float32) bool {
+	return ColorEdit4V(label, col, 0)
+}
+
+// ColorEdit4V will show a clickable little square which will open a color picker window for 4D vector (rgba format).
+func ColorEdit4V(label string, col *[4]float32, flags int) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	ccol := (*C.float)(&col[0])
+	return C.iggColorEdit4(labelArg, ccol, C.int(flags)) != 0
+}
+
+// ColorPicker3 calls ColorPicker3(label, col, 0)
+func ColorPicker3(label string, col *[3]float32, flags int) bool {
+	return ColorPicker3V(label, col, 0)
+}
+
+// ColorPicker3V will show directly a color picker control for editing a color in 3D vector (rgb format).
+func ColorPicker3V(label string, col *[3]float32, flags int) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	ccol := (*C.float)(&col[0])
+	return C.iggColorPicker3(labelArg, ccol, C.int(flags)) != 0
+}
+
+// ColorPicker4 calls ColorPicker4(label, col, 0)
+func ColorPicker4(label string, col *[4]float32, flags int) bool {
+	return ColorPicker4(label, col, 0)
+}
+
+// ColorPicker4V will show directly a color picker control for editing a color in 4D vector (rgba format).
+func ColorPicker4V(label string, col *[4]float32, flags int) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	ccol := (*C.float)(&col[0])
+	return C.iggColorPicker4(labelArg, ccol, C.int(flags)) != 0
 }
 
 // Separator is generally horizontal. Inside a menu bar or in horizontal layout mode, this becomes a vertical separator.
@@ -706,13 +795,16 @@ func TextLineHeightWithSpacing() float32 {
 	return float32(C.iggGetTextLineHeightWithSpacing())
 }
 
-// GetFrameHeight ~ FontSize + style.FramePadding.y * 2
-func GetFrameHeight() float32 {
+// FrameHeight returns the height of the current frame. This is equal to the
+// font size plus the padding at the top and bottom.
+func FrameHeight() float32 {
 	return float32(C.iggGetFrameHeight())
 }
 
-// GetFrameHeightWithSpacing ~ FontSize + style.FramePadding.y * 2 + style.ItemSpacing.y (distance in pixels between 2 consecutive lines of framed widgets)
-func GetFrameHeightWithSpacing() float32 {
+// FrameHeightWithSpacing returns the height of the current frame with the item
+// spacing added. This is equal to the font size plus the padding at the top
+// and bottom, plus the value of style.ItemSpacing.y
+func FrameHeightWithSpacing() float32 {
 	return float32(C.iggGetFrameHeightWithSpacing())
 }
 
@@ -733,13 +825,12 @@ func TreePop() {
 	C.iggTreePop()
 }
 
-// SetNextTreeNodeOpen sets the open/collapsed state of the following tree node.
-func SetNextTreeNodeOpen(open bool, cond Condition) {
-	C.iggSetNextTreeNodeOpen(castBool(open), C.int(cond))
+// SetNextItemOpen sets the open/collapsed state of the following tree node.
+func SetNextItemOpen(open bool, cond Condition) {
+	C.iggSetNextItemOpen(castBool(open), C.int(cond))
 }
 
 // TreeNodeToLabelSpacing returns the horizontal distance preceding label for a regular unframed TreeNode.
-
 func TreeNodeToLabelSpacing() float32 {
 	return float32(C.iggGetTreeNodeToLabelSpacing())
 }
@@ -1039,14 +1130,61 @@ func IsItemHoveredV(flags int) bool {
 	return C.iggIsItemHovered(C.int(flags)) != 0
 }
 
-// IsItemHovered calls IsItemHoveredV(HoveredFlagsDefault)
+// IsItemHovered calls IsItemHoveredV(HoveredFlagsNone)
 func IsItemHovered() bool {
-	return IsItemHoveredV(HoveredFlagsDefault)
+	return IsItemHoveredV(HoveredFlagsNone)
 }
 
 // IsItemClicked is the last item clicked? (e.g. button/node just clicked on) == IsMouseClicked(mouse_button) && IsItemHovered()
 func IsItemClicked() bool {
 	return C.iggIsItemClicked() != 0
+}
+
+// IsItemActive returns if the last item is active. (e.g. button being held, text field being edited. This will continuously return true while holding mouse button on an item. Items that don't interact will always return false)
+func IsItemActive() bool {
+	return C.iggIsItemActive() != 0
+}
+
+// IsAnyItemActive returns true if the any item is active.
+func IsAnyItemActive() bool {
+	return C.iggIsAnyItemActive() != 0
+}
+
+// IsItemVisible returns true if the last item is visible
+func IsItemVisible() bool {
+	return C.iggIsItemVisible() != 0
+}
+
+// IsWindowAppearing returns whether the current window is appearing.
+func IsWindowAppearing() bool {
+	return C.iggIsWindowAppearing() != 0
+}
+
+// IsWindowCollapsed returns whether the current window is collapsed.
+func IsWindowCollapsed() bool {
+	return C.iggIsWindowCollapsed() != 0
+}
+
+// IsWindowFocusedV returns if current window is focused or its root/child, depending on flags. See flags for options.
+func IsWindowFocusedV(flags int) bool {
+	return C.iggIsWindowFocused(C.int(flags)) != 0
+}
+
+// IsWindowFocused calls IsWindowFocusedV(FocusedFlagsNone)
+func IsWindowFocused() bool {
+	return IsWindowFocusedV(FocusedFlagsNone)
+}
+
+// IsWindowHoveredV returns if current window is hovered (and typically: not blocked by a popup/modal).
+// See flags for options. NB: If you are trying to check whether your mouse should be dispatched to imgui or to your app,
+// you should use the 'io.WantCaptureMouse' boolean for that!
+func IsWindowHoveredV(flags int) bool {
+	return C.iggIsWindowHovered(C.int(flags)) != 0
+}
+
+// IsWindowHovered calls IsWindowHoveredV(HoveredFlagsNone)
+func IsWindowHovered() bool {
+	return IsWindowHoveredV(HoveredFlagsNone)
 }
 
 // IsKeyDown returns true if the corresponding key is currently being held down.
@@ -1101,16 +1239,26 @@ func IsMouseDoubleClicked(button int) bool {
 	return C.iggIsMouseDoubleClicked(C.int(button)) != 0
 }
 
-// Columns calls ColumnsV(count, label, ColumnsFlagsNone).
-func Columns(count int, label string) {
-	ColumnsV(count, label, ColumnsFlagsNone)
+// MousePos returns the current window position in screen space.
+func MousePos() Vec2 {
+	var value Vec2
+	valueArg, valueFin := value.wrapped()
+	C.iggMousePos(valueArg)
+	valueFin()
+	return value
+}
+
+// Columns calls ColumnsV(1, "", false).
+func Columns() {
+	ColumnsV(1, "", false)
 }
 
 // ColumnsV creates a column layout of the specified number of columns.
-func ColumnsV(count int, label string, flags int32) {
+// The brittle columns API will be superseded by an upcoming 'table' API.
+func ColumnsV(count int, label string, border bool) {
 	labelArg, labelFin := wrapString(label)
 	defer labelFin()
-	C.iggBeginColumns(C.int(count), labelArg, C.int(flags))
+	C.iggColumns(C.int(count), labelArg, castBool(border))
 }
 
 // NextColumn next column, defaults to current row or next row if the current row is finished.
@@ -1160,6 +1308,54 @@ func ColumnsCount() int {
 	return int(C.iggGetColumnsCount())
 }
 
+// BeginTabBarV create and append into a TabBar
+func BeginTabBarV(strID string, flags int) bool {
+	idArg, idFin := wrapString(strID)
+	defer idFin()
+
+	return C.iggBeginTabBar(idArg, C.int(flags)) != 0
+}
+
+// BeginTabBar calls BeginTabBarV(strId, 0)
+func BeginTabBar(strID string) bool {
+	return BeginTabBarV(strID, 0)
+}
+
+// EndTabBar only call EndTabBar() if BeginTabBar() returns true!
+func EndTabBar() {
+	C.iggEndTabBar()
+}
+
+// BeginTabItemV create a Tab. Returns true if the Tab is selected.
+func BeginTabItemV(label string, open *bool, flags int) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+
+	openArg, openFin := wrapBool(open)
+	defer openFin()
+
+	return C.iggBeginTabItem(labelArg, openArg, C.int(flags)) != 0
+}
+
+// BeginTabItem calls BeginTabItemV(label, nil, 0)
+func BeginTabItem(label string) bool {
+	return BeginTabItemV(label, nil, 0)
+}
+
+// EndTabItem Don't call PushID(tab->ID)/PopID() on BeginTabItem()/EndTabItem()
+func EndTabItem() {
+	C.iggEndTabItem()
+}
+
+// SetTabItemClosed notify TabBar or Docking system of a closed tab/window ahead
+// (useful to reduce visual flicker on reorderable tab bars). For tab-bar: call
+// after BeginTabBar() and before Tab submissions. Otherwise call with a window name.
+func SetTabItemClosed(tabOrDockedWindowLabel string) {
+	labelArg, labelFin := wrapString(tabOrDockedWindowLabel)
+	defer labelFin()
+	C.iggSetTabItemClosed(labelArg)
+}
+
 // SetScrollHereY adjusts scrolling amount to make current cursor position visible.
 // ratio=0.0: top, 0.5: center, 1.0: bottom.
 // When using to make a "default/current item" visible, consider using SetItemDefaultFocus() instead.
@@ -1170,17 +1366,6 @@ func SetScrollHereY(ratio float32) {
 // SetItemAllowOverlap allow last item to be overlapped by a subsequent item. sometimes useful with invisible buttons, selectables, etc. to catch unused area.
 func SetItemAllowOverlap() {
 	C.iggSetItemAllowOverlap()
-}
-
-// CalcTextSize
-func CalcTextSize(text string) Vec2 {
-	textArg, textFin := wrapString(text)
-	defer textFin()
-	out := Vec2{}
-	outArg, outFin := out.wrapped()
-	C.iggCalcTextSize(textArg, outArg)
-	outFin()
-	return out
 }
 
 // SetItemDefaultFocus makes the last item the default focused item of a window.
@@ -1207,4 +1392,14 @@ func MouseCursor() int {
 // SetMouseCursor sets desired cursor type.
 func SetMouseCursor(cursor int) {
 	C.iggSetMouseCursor(C.int(cursor))
+}
+
+// SetKeyboardFocusHere calls SetKeyboardFocusHereV(0)
+func SetKeyboardFocusHere() {
+	C.iggSetKeyboardFocusHere(0)
+}
+
+// SetKeyboardFocusHereV gives keyboard focus to next item
+func SetKeyboardFocusHereV(offset int) {
+	C.iggSetKeyboardFocusHere(C.int(offset))
 }

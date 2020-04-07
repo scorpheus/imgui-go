@@ -41,12 +41,6 @@ func (atlas FontAtlas) GlyphRangesJapanese() GlyphRanges {
 
 // GlyphRangesChinese calls GlyphRangesChineseFull() for compatibility reasons.
 // Deprecated: This function will be removed with v2.x.x ; Use GlyphRangesChineseFull instead.
-func (atlas FontAtlas) GlyphRangesChinese() GlyphRanges {
-	return atlas.GlyphRangesChineseFull()
-}
-
-// GlyphRangesChineseFull describes Default + Half-Width + Japanese Hiragana/Katakana + full set of about 21000 CJK
-// Unified Ideographs.
 func (atlas FontAtlas) GlyphRangesChineseFull() GlyphRanges {
 	return GlyphRanges(C.iggGetGlyphRangesChineseFull(atlas.handle()))
 }
@@ -95,10 +89,33 @@ func (atlas FontAtlas) AddFontFromFileTTF(filename string, sizePixels float32) F
 	return atlas.AddFontFromFileTTFV(filename, sizePixels, DefaultFontConfig, EmptyGlyphRanges)
 }
 
-// AddFontFromMemoryTTF // Note: Transfer ownership of 'ttf_data' to ImFontAtlas! Will be deleted after Build(). Set font_cfg->FontDataOwnedByAtlas to false to keep ownership.
-func (atlas FontAtlas) AddFontFromMemoryTTF(data []byte, sizePixels float32) Font {
-	fontHandle := C.iggAddFontFromMemoryTTF(atlas.handle(), unsafe.Pointer(&data[0]), C.int(len(data)), C.float(sizePixels))
+// AddFontFromMemoryTTFV attempts to load a font from given TTF byte array.
+func (atlas FontAtlas) AddFontFromMemoryTTFV(
+	fontData []byte, sizePixels float32,
+	config FontConfig,
+	glyphRange GlyphRanges,
+) Font {
+	// NOTE: We never free the fontDataC array because IMGUI's AddFontFromMemoryTTF takes ownership if
+	// FontConfig.FontDataOwnedByAtlas == true (which it is by default). We do not expose this flag in Go
+	// so we can assume in most cases it is true.
+	if !config.getFontDataOwnedByAtlas() {
+		panic("Only ImFontConfig.FontDataOwnedByAtlas == true is supported.")
+	}
+
+	fontDataC := C.malloc(C.size_t(len(fontData)))
+	cBuf := (*[1 << 30]byte)(fontDataC)
+
+	copy(cBuf[:], fontData)
+
+	fontHandle := C.iggAddFontFromMemoryTTF(atlas.handle(), (*C.char)(fontDataC), C.int(len(fontData)), C.float(sizePixels),
+		config.handle(), glyphRange.handle())
+
 	return Font(fontHandle)
+}
+
+// AddFontFromMemoryTTF calls AddFontFromMemoryTTFV(fontData, sizePixels, DefaultFontConfig, EmptyGlyphRanges).
+func (atlas FontAtlas) AddFontFromMemoryTTF(fontData []byte, sizePixels float32) Font {
+	return atlas.AddFontFromMemoryTTFV(fontData, sizePixels, DefaultFontConfig, EmptyGlyphRanges)
 }
 
 // SetTexDesiredWidth registers the width desired by user before building the image. Must be a power-of-two.
