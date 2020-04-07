@@ -94,6 +94,7 @@ extern IggBool iggSplitter(IggBool split_vertically, float thickness, float *siz
 
 extern IggBool iggInputText(char const* label, char* buf, unsigned int bufSize, int flags, int callbackKey);
 extern IggBool iggInputTextMultiline(char const* label, char* buf, unsigned int bufSize, IggVec2 const *size, int flags, int callbackKey);
+extern IggBool iggInputInt(char const* label, int* v, int step, int step_fast, int flags);
 
 extern void iggSeparator(void);
 extern void iggSameLine(float posX, float spacingW);

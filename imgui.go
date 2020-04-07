@@ -90,10 +90,12 @@ func ShowUserGuide() {
 func StyleColorsDark() {
 	C.iggStyleColorsDark()
 }
+
 // StyleColorsClassic classic imgui style
 func StyleColorsClassic() {
 	C.iggStyleColorsClassic()
 }
+
 // StyleColorsLight best used with borders and a custom, thicker font
 func StyleColorsLight() {
 	C.iggStyleColorsLight()
@@ -586,6 +588,21 @@ func InputTextMultiline(label string, text *string) bool {
 	return InputTextMultilineV(label, text, Vec2{}, 0, nil)
 }
 
+// InputIntV creates a text field for int
+func InputIntV(label string, i *int32, step int, stepFast int, flags int) bool {
+	labelArg, labelFin := wrapString(label)
+	defer labelFin()
+	valueArg, valueFin := wrapInt32(i)
+	defer valueFin()
+
+	return C.iggInputInt(labelArg, valueArg, C.int(step), C.int(stepFast), C.int(flags)) != 0
+}
+
+// InputInt calls InputIntV(label, int, 0, nil)
+func InputInt(label string, i *int32) bool {
+	return InputIntV(label, i, 1, 100, 0)
+}
+
 // Separator is generally horizontal. Inside a menu bar or in horizontal layout mode, this becomes a vertical separator.
 func Separator() {
 	C.iggSeparator()
@@ -722,7 +739,6 @@ func SetNextTreeNodeOpen(open bool, cond Condition) {
 }
 
 // TreeNodeToLabelSpacing returns the horizontal distance preceding label for a regular unframed TreeNode.
-
 
 func TreeNodeToLabelSpacing() float32 {
 	return float32(C.iggGetTreeNodeToLabelSpacing())
@@ -1166,7 +1182,6 @@ func CalcTextSize(text string) Vec2 {
 	outFin()
 	return out
 }
-
 
 // SetItemDefaultFocus makes the last item the default focused item of a window.
 func SetItemDefaultFocus() {

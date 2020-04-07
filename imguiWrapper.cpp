@@ -365,6 +365,11 @@ IggBool iggInputTextMultiline(char const *label, char* buf, unsigned int bufSize
                                     iggInputTextCallbackWrapper, reinterpret_cast<void *>(callbackKey)) ? 1 : 0;
 }
 
+IggBool iggInputInt(char const* label, int* v, int step, int step_fast, int flags)
+{
+   return ImGui::InputInt(label, v, step, step_fast, flags) ? 1 : 0;
+}
+
 void iggSeparator(void)
 {
    ImGui::Separator();
