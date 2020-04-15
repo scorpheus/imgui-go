@@ -611,6 +611,11 @@ void iggOpenPopup(char const *id)
    ImGui::OpenPopup(id);
 }
 
+IggBool iggBeginPopup(char const *name, int flags)
+{
+   return ImGui::BeginPopup(name, flags) ? 1 : 0;
+}
+
 IggBool iggBeginPopupModal(char const *name, IggBool *open, int flags)
 {
    BoolWrapper openArg(open);

@@ -153,6 +153,7 @@ extern void iggEndMenu(void);
 extern IggBool iggMenuItem(char const *label, char const *shortcut, IggBool selected, IggBool enabled);
 
 extern void iggOpenPopup(char const *id);
+extern IggBool iggBeginPopup(char const *name, int flags);
 extern IggBool iggBeginPopupModal(char const *name, IggBool *open, int flags);
 extern IggBool iggBeginPopupContextItem(char const *label, int mouseButton);
 extern void iggEndPopup(void);

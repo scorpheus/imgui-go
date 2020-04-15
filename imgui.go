@@ -64,10 +64,12 @@ func ShowUserGuide() {
 func StyleColorsDark() {
 	C.iggStyleColorsDark()
 }
+
 // StyleColorsClassic classic imgui style
 func StyleColorsClassic() {
 	C.iggStyleColorsClassic()
 }
+
 // StyleColorsLight best used with borders and a custom, thicker font
 func StyleColorsLight() {
 	C.iggStyleColorsLight()
@@ -180,8 +182,6 @@ func SetNextWindowSizeV(size Vec2, cond Condition) {
 func SetNextWindowSize(size Vec2) {
 	SetNextWindowSizeV(size, 0)
 }
-
-
 
 // SetNextWindowSizeConstraints set next window size limits. use -1,-1 on either X/Y axis to preserve the current size. Use callback to apply non-trivial programmatic constraints.
 func SetNextWindowSizeConstraints(sizeMin Vec2, sizeMax Vec2) {
@@ -1040,6 +1040,18 @@ func OpenPopup(id string) {
 	idArg, idFin := wrapString(id)
 	defer idFin()
 	C.iggOpenPopup(idArg)
+}
+
+// BeginPopupV return true if the popup is open, and you can start outputting to it. only call EndPopup() if BeginPopup() returns true!
+func BeginPopupV(name string, flags int) bool {
+	nameArg, nameFin := wrapString(name)
+	defer nameFin()
+	return C.iggBeginPopup(nameArg, C.int(flags)) != 0
+}
+
+// BeginPopup calls BeginPopupV(name, nil, 0)
+func BeginPopup(name string) bool {
+	return BeginPopupV(name, 0)
 }
 
 // BeginPopupModalV creates modal dialog (regular window with title bar, block interactions behind the modal window,
