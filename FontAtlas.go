@@ -1,6 +1,6 @@
 package imgui
 
-// #include "FontAtlasWrapper.h"
+// #include "wrapper/FontAtlas.h"
 import "C"
 import "unsafe"
 
@@ -17,7 +17,7 @@ type RGBA32Image struct {
 }
 
 // FontAtlas contains runtime data for multiple fonts,
-// bake multiple fonts into a single texture, TTF/OTF font loader
+// bake multiple fonts into a single texture, TTF/OTF font loader.
 type FontAtlas uintptr
 
 func (atlas FontAtlas) handle() C.IggFontAtlas {
@@ -39,8 +39,8 @@ func (atlas FontAtlas) GlyphRangesJapanese() GlyphRanges {
 	return GlyphRanges(C.iggGetGlyphRangesJapanese(atlas.handle()))
 }
 
-// GlyphRangesChinese calls GlyphRangesChineseFull() for compatibility reasons.
-// Deprecated: This function will be removed with v2.x.x ; Use GlyphRangesChineseFull instead.
+// GlyphRangesChineseFull describes Default + Half-Width + Japanese Hiragana/Katakana + full set of about 21000 CJK
+// Unified Ideographs.
 func (atlas FontAtlas) GlyphRangesChineseFull() GlyphRanges {
 	return GlyphRanges(C.iggGetGlyphRangesChineseFull(atlas.handle()))
 }
@@ -103,9 +103,9 @@ func (atlas FontAtlas) AddFontFromMemoryTTFV(
 	}
 
 	fontDataC := C.malloc(C.size_t(len(fontData)))
-	cBuf := (*[1 << 30]byte)(fontDataC)
+	cBuf := ptrToByteSlice(fontDataC)
 
-	copy(cBuf[:], fontData)
+	copy(cBuf, fontData)
 
 	fontHandle := C.iggAddFontFromMemoryTTF(atlas.handle(), (*C.char)(fontDataC), C.int(len(fontData)), C.float(sizePixels),
 		config.handle(), glyphRange.handle())

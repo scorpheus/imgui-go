@@ -1,6 +1,6 @@
 package imgui
 
-// #include "UtilsWrapper.h"
+// #include "wrapper/Utils.h"
 import "C"
 
 // Spinner draw a rotating spinner

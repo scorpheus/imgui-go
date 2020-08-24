@@ -1,7 +1,6 @@
 package imgui
 
-// #include "ListClipper.h"
-// #include "imguiWrapper.h"
+// #include "wrapper/ListClipper.h"
 import "C"
 
 // ListClipper is a helper to manually clip large list of items.
@@ -25,7 +24,7 @@ import "C"
 // Step 1: the clipper infers height from first element, calculates the actual range of elements to display,
 // and positions the cursor before the first element.
 //
-// Step 2: dummy step only required if an explicit itemsHeight was passed to Begin() and user call Step().
+// Step 2: placeholder step only required if an explicit itemsHeight was passed to Begin() and user call Step().
 // Does nothing and switch to Step 3.
 //
 // Step 3: the clipper validates that we have reached the expected Y position (corresponding to element DisplayEnd),
@@ -39,7 +38,7 @@ type ListClipper struct {
 	DisplayEnd   int
 }
 
-// wrapped return C struct and func for setting the values when done
+// wrapped returns C struct and func for setting the values when done.
 func (clipper *ListClipper) wrapped() (out *C.IggListClipper, finisher func()) {
 	if clipper == nil {
 		return nil, func() {}

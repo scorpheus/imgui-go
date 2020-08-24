@@ -1,10 +1,13 @@
 package imgui
 
-// #include "StyleWrapper.h"
+// #include "wrapper/Style.h"
 import "C"
 
 // StyleVarID identifies a style variable in the UI style.
 type StyleVarID int
+
+// StyleColorID identifies a color in the UI style.
+type StyleColorID int
 
 const (
 	// StyleVarAlpha is a float
@@ -55,10 +58,7 @@ const (
 	StyleVarSelectableTextAlign StyleVarID = 22
 )
 
-// StyleColorID identifies a color in the UI style.
-type StyleColorID int
-
-// StyleColor identifier
+// This is the list of StyleColor identifier.
 const (
 	StyleColorText                  StyleColorID = 0
 	StyleColorTextDisabled          StyleColorID = 1
@@ -113,6 +113,64 @@ const (
 // Style describes the overall graphical representation of the user interface.
 type Style uintptr
 
+// CurrentStyle returns the UI Style for the currently active context.
+func CurrentStyle() Style {
+	return Style(C.iggGetCurrentStyle())
+}
+
+// StyleColorsDark sets the new, recommended style (default).
+func StyleColorsDark() {
+	C.iggStyleColorsDark()
+}
+
+// StyleColorsClassic sets the classic style.
+func StyleColorsClassic() {
+	C.iggStyleColorsClassic()
+}
+
+// StyleColorsLight sets the light style, best used with borders and a custom, thicker font.
+func StyleColorsLight() {
+	C.iggStyleColorsLight()
+}
+
+// PushStyleColor pushes the current style color for given ID on a stack and sets the given one.
+// To revert to the previous color, call PopStyleColor().
+func PushStyleColor(id StyleColorID, color Vec4) {
+	colorArg, _ := color.wrapped()
+	C.iggPushStyleColor(C.int(id), colorArg)
+}
+
+// PopStyleColorV reverts the given amount of style color changes.
+func PopStyleColorV(count int) {
+	C.iggPopStyleColor(C.int(count))
+}
+
+// PopStyleColor calls PopStyleColorV(1).
+func PopStyleColor() {
+	PopStyleColorV(1)
+}
+
+// PushStyleVarFloat pushes a float value on the stack to temporarily modify a style variable.
+func PushStyleVarFloat(id StyleVarID, value float32) {
+	C.iggPushStyleVarFloat(C.int(id), C.float(value))
+}
+
+// PushStyleVarVec2 pushes a Vec2 value on the stack to temporarily modify a style variable.
+func PushStyleVarVec2(id StyleVarID, value Vec2) {
+	valueArg, _ := value.wrapped()
+	C.iggPushStyleVarVec2(C.int(id), valueArg)
+}
+
+// PopStyleVarV reverts the given amount of style variable changes.
+func PopStyleVarV(count int) {
+	C.iggPopStyleVar(C.int(count))
+}
+
+// PopStyleVar calls PopStyleVarV(1).
+func PopStyleVar() {
+	PopStyleVarV(1)
+}
+
 func (style Style) handle() C.IggGuiStyle {
 	return C.IggGuiStyle(style)
 }
@@ -127,7 +185,16 @@ func (style Style) ItemInnerSpacing() Vec2 {
 	return value
 }
 
-// FramePadding is the padding within a framed rectangle (used by most widgets)
+// ItemSpacing returns horizontal and vertical spacing between widgets or lines.
+func (style Style) ItemSpacing() Vec2 {
+	var value Vec2
+	valueArg, valueFin := value.wrapped()
+	C.iggStyleGetItemSpacing(style.handle(), valueArg)
+	valueFin()
+	return value
+}
+
+// FramePadding is the padding within a framed rectangle (used by most widgets).
 func (style Style) FramePadding() Vec2 {
 	var value Vec2
 	valueArg, valueFin := value.wrapped()
