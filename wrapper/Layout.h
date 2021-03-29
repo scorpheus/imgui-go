@@ -33,8 +33,6 @@ extern float iggGetTextLineHeightWithSpacing(void);
 extern float iggGetFrameHeight(void);
 extern float iggGetFrameHeightWithSpacing(void);
 
-extern void iggSetItemAllowOverlap();
-
 #ifdef __cplusplus
 }
 #endif

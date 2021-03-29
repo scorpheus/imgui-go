@@ -120,8 +120,3 @@ float iggGetFrameHeightWithSpacing(void)
 {
    return ImGui::GetFrameHeightWithSpacing();
 }
-
-void iggSetItemAllowOverlap()
-{
-   ImGui::SetItemAllowOverlap();
-}
