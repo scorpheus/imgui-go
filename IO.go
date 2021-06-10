@@ -300,6 +300,16 @@ func (io IO) SetBackendFlags(flags BackendFlags) {
 	C.iggIoSetBackendFlags(io.handle, C.int(flags))
 }
 
+// GetBackendFlags gets the current backend flags.
+func (io IO) GetBackendFlags() BackendFlags {
+	return BackendFlags(C.iggIoGetBackendFlags(io.handle))
+}
+
+// SetMouseDrawCursor request ImGui to draw a mouse cursor for you (if you are on a platform without a mouse cursor).
+func (io IO) SetMouseDrawCursor(show bool) {
+	C.iggIoSetMouseDrawCursor(io.handle, castBool(show))
+}
+
 // Clipboard describes the access to the text clipboard of the window manager.
 type Clipboard interface {
 	// Text returns the current text from the clipboard, if available.
