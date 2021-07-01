@@ -236,6 +236,99 @@ IggBool iggSelectable(char const *label, IggBool selected, int flags, IggVec2 co
    return ImGui::Selectable(label, selected != 0, flags, *sizeArg) ? 1 : 0;
 }
 
+//-------------------------------------------------------------------------
+// [SECTION] Widgets: Multi-Selection System
+//-------------------------------------------------------------------------
+// - BeginMultiSelect()
+// - EndMultiSelect()
+// - SetNextItemSelectionData()
+// - MultiSelectItemHeader() [Internal]
+// - MultiSelectItemFooter() [Internal]
+//-------------------------------------------------------------------------
+// FIXME: Shift+click on an item that has no multi-select data could treat selection the same as the last item with such data?
+// The problem is that this may conflict with other behaviors of those items?
+//-------------------------------------------------------------------------
+
+IggBool iggMultiSelectDataRequestClear(iggMultiSelectData handle)
+{
+   ImGuiMultiSelectData *MultiSelectData = reinterpret_cast<ImGuiMultiSelectData*>(handle);
+   IggBool result = 0;
+   exportValue(result, MultiSelectData->RequestClear);
+   return result;
+}
+IggBool iggMultiSelectDataRequestSelectAll(iggMultiSelectData handle)
+{
+   ImGuiMultiSelectData *MultiSelectData = reinterpret_cast<ImGuiMultiSelectData*>(handle);
+   IggBool result = 0;
+   exportValue(result, MultiSelectData->RequestSelectAll);
+   return result;
+}
+IggBool iggMultiSelectDataRequestSetRange(iggMultiSelectData handle)
+{
+   ImGuiMultiSelectData *MultiSelectData = reinterpret_cast<ImGuiMultiSelectData*>(handle);
+   IggBool result = 0;
+   exportValue(result, MultiSelectData->RequestSetRange);
+   return result;
+}
+IggBool iggMultiSelectDataRangeSrcPassedBy(iggMultiSelectData handle)
+{
+   ImGuiMultiSelectData *MultiSelectData = reinterpret_cast<ImGuiMultiSelectData*>(handle);
+   IggBool result = 0;
+   exportValue(result, MultiSelectData->RangeSrcPassedBy);
+   return result;
+}
+void iggMultiSelectDataSetRangeSrcPassedBy(iggMultiSelectData handle, IggBool v)
+{
+   ImGuiMultiSelectData *MultiSelectData = reinterpret_cast<ImGuiMultiSelectData*>(handle);
+   MultiSelectData->RangeSrcPassedBy = v != 0;
+}
+IggBool iggMultiSelectDataRangeValue(iggMultiSelectData handle)
+{
+   ImGuiMultiSelectData *MultiSelectData = reinterpret_cast<ImGuiMultiSelectData*>(handle);
+   IggBool result = 0;
+   exportValue(result, MultiSelectData->RangeValue);
+   return result;
+}
+uintptr_t iggMultiSelectDataRangeSrc(iggMultiSelectData handle)
+{
+   ImGuiMultiSelectData *MultiSelectData = reinterpret_cast<ImGuiMultiSelectData*>(handle);
+   return (uintptr_t)MultiSelectData->RangeSrc;
+}
+uintptr_t iggMultiSelectDataRangeDst(iggMultiSelectData handle)
+{
+   ImGuiMultiSelectData *MultiSelectData = reinterpret_cast<ImGuiMultiSelectData*>(handle);
+   return (uintptr_t)MultiSelectData->RangeDst;
+}
+int iggMultiSelectDataRangeDirection(iggMultiSelectData handle)
+{
+   ImGuiMultiSelectData *MultiSelectData = reinterpret_cast<ImGuiMultiSelectData*>(handle);
+   return MultiSelectData->RangeDirection;
+}
+
+iggMultiSelectData iggBeginMultiSelect(int flags, uintptr_t range_ref, IggBool range_ref_is_selected)
+{
+   return reinterpret_cast<iggMultiSelectData>(ImGui::BeginMultiSelect(flags, (void*)range_ref, range_ref_is_selected != 0));
+}
+iggMultiSelectData iggEndMultiSelect()
+{
+   return reinterpret_cast<iggMultiSelectData>(ImGui::EndMultiSelect());
+}
+void iggSetNextItemSelectionData(uintptr_t item_data)
+{
+    ImGui::SetNextItemSelectionData((void*)item_data);
+}
+void iggMultiSelectItemHeader(unsigned int id, IggBool *p_selected)
+{
+   BoolWrapper p_selectedArg(p_selected);
+    ImGui::MultiSelectItemHeader(id, p_selectedArg);
+}
+void iggMultiSelectItemFooter(unsigned int id, IggBool *p_selected, IggBool *p_pressed)
+{
+   BoolWrapper p_selectedArg(p_selected);
+   BoolWrapper p_pressedArg(p_pressed);
+    ImGui::MultiSelectItemFooter(id, p_selectedArg, p_pressedArg);
+}
+
 IggBool iggBeginListBox(char const *label, IggVec2 const *size)
 {
    Vec2Wrapper sizeArg(size);

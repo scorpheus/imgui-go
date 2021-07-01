@@ -3,7 +3,9 @@ package imgui
 // #include "wrapper/Widgets.h"
 import "C"
 
-import "math"
+import (
+	"math"
+)
 
 // Text adds formatted text. See PushTextWrapPosV() or PushStyleColorV() for modifying the output.
 // Without any modified style stack, the text is unformatted.
@@ -532,7 +534,6 @@ func VSliderInt(label string, size Vec2, value *int32, min, max int32) bool {
 	return VSliderIntV(label, size, value, min, max, "%d", SliderFlagsNone)
 }
 
-
 // InputTextFlags for InputTextV(), etc.
 type InputTextFlags int
 
@@ -982,6 +983,122 @@ func Selectable(label string) bool {
 	return SelectableV(label, false, 0, Vec2{})
 }
 
+// MultiSelectFlags Flags for BeginMultiSelect().
+// This system is designed to allow mouse/keyboard multi-selection, including support for range-selection (SHIFT + click),
+// which is difficult to re-implement manually. If you disable multi-selection with ImGuiMultiSelectFlags_NoMultiSelect
+// (which is provided for consistency and flexibility), the whole BeginMultiSelect() system becomes largely overkill as
+// you can handle single-selection in a simpler manner by just calling Selectable() and reacting on clicks yourself.
+type MultiSelectFlags int
+
+const (
+	// MultiSelectFlagsNone default = 0.
+	MultiSelectFlagsNone MultiSelectFlags = 0
+	// MultiSelectFlagsNoMultiSelect
+	MultiSelectFlagsNoMultiSelect MultiSelectFlags = 1 << 0
+	// MultiSelectFlagsNoUnselect Disable unselecting items with CTRL+Click, CTRL+Space etc.
+	MultiSelectFlagsAutoNoUnselect MultiSelectFlags = 1 << 1
+	// MultiSelectFlagsNoSelectAll Disable CTRL+A shortcut to set RequestSelectAll
+	MultiSelectFlagsTabNoSelectAll MultiSelectFlags = 1 << 2
+)
+
+// MultiSelectData ...
+type MultiSelectData uintptr
+
+func (data MultiSelectData) handle() C.iggMultiSelectData {
+	return C.iggMultiSelectData(data)
+}
+
+// RequestClear Begin, End   // Request user to clear selection
+func (data MultiSelectData) RequestClear() bool {
+	return (data.handle() != nil) && (C.iggMultiSelectDataRequestClear(data.handle()) != 0)
+}
+
+// RequestSelectAll Begin, End   // Request user to select all
+func (data MultiSelectData) RequestSelectAll() bool {
+	return (data.handle() != nil) && (C.iggMultiSelectDataRequestSelectAll(data.handle()) != 0)
+}
+
+// RequestSetRange  End          // Request user to set or clear selection in the [RangeSrc..RangeDst] range
+func (data MultiSelectData) RequestSetRange() bool {
+	return (data.handle() != nil) && (C.iggMultiSelectDataRequestSetRange(data.handle()) != 0)
+}
+
+// RangeSrcPassedBy In loop      // (If clipping) Need to be set by user if RangeSrc was part of the clipped set before submitting the visible items. Ignore if not clipping.
+func (data MultiSelectData) RangeSrcPassedBy() bool {
+	return (data.handle() != nil) && (C.iggMultiSelectDataRangeSrcPassedBy(data.handle()) != 0)
+}
+
+// SetRangeSrcPassedBy In loop      // (If clipping) Need to be set by user if RangeSrc was part of the clipped set before submitting the visible items. Ignore if not clipping.
+func (data MultiSelectData) SetRangeSrcPassedBy(v bool) {
+	if data.handle() != nil {
+		C.iggMultiSelectDataSetRangeSrcPassedBy(data.handle(), castBool(v))
+	}
+}
+
+// RangeValue End          // End: parameter from RequestSetRange request. True = Select Range, False = Unselect range.
+func (data MultiSelectData) RangeValue() bool {
+	return (data.handle() != nil) && (C.iggMultiSelectDataRangeValue(data.handle()) != 0)
+}
+
+// RangeSrc Begin, End   // End: parameter from RequestSetRange request + you need to save this value so you can pass it again next frame. / Begin: this is the value you passed to BeginMultiSelect()
+func (data MultiSelectData) RangeSrc() uintptr {
+	if data.handle() == nil {
+		return 0
+	}
+	return uintptr(C.iggMultiSelectDataRangeSrc(data.handle()))
+}
+
+// RangeDst End          // End: parameter from RequestSetRange request.
+func (data MultiSelectData) RangeDst() uintptr {
+	if data.handle() == nil {
+		return 0
+	}
+	return uintptr(C.iggMultiSelectDataRangeDst(data.handle()))
+}
+
+// RangeDirection End          // End: parameter from RequestSetRange request. +1 if RangeSrc came before RangeDst, -1 otherwise. Available as an indicator in case you cannot infer order from the void* values.
+func (data MultiSelectData) RangeDirection() int32 {
+	if data.handle() == nil {
+		return 0
+	}
+	return int32(C.iggMultiSelectDataRangeDirection(data.handle()))
+}
+
+//BeginMultiSelectV -------------------------------------------------------------------------
+// [SECTION] Widgets: Multi-Selection System
+//-------------------------------------------------------------------------
+// - BeginMultiSelect()
+// - EndMultiSelect()
+// - SetNextItemSelectionData()
+// - MultiSelectItemHeader() [Internal]
+// - MultiSelectItemFooter() [Internal]
+//-------------------------------------------------------------------------
+// FIXME: Shift+click on an item that has no multi-select data could treat selection the same as the last item with such data?
+// The problem is that this may conflict with other behaviors of those items?
+//-------------------------------------------------------------------------
+func BeginMultiSelectV(flags MultiSelectFlags, rangeRef uintptr, range_ref_is_selected bool) MultiSelectData {
+	return MultiSelectData(C.iggBeginMultiSelect(C.int(flags), C.uintptr_t(rangeRef), castBool(range_ref_is_selected)))
+}
+func EndMultiSelect() MultiSelectData {
+	return MultiSelectData(C.iggEndMultiSelect())
+}
+func SetNextItemSelectionData(item_data uintptr) {
+	C.iggSetNextItemSelectionData(C.uintptr_t(item_data))
+}
+func MultiSelectItemHeader(id uint, pSelected *bool) {
+	pselectedArg, pselectedFin := wrapBool(pSelected)
+	defer pselectedFin()
+
+	C.iggMultiSelectItemHeader(C.uint(id), pselectedArg)
+}
+func MultiSelectItemFooter(id uint, pSelected *bool, pPressed *bool) {
+	pselectedArg, pselectedFin := wrapBool(pSelected)
+	defer pselectedFin()
+	pPressedArg, pPressedFin := wrapBool(pPressed)
+	defer pPressedFin()
+	C.iggMultiSelectItemFooter(C.uint(id), pselectedArg, pPressedArg)
+}
+
 // ListBoxV creates a list of selectables of given items with equal height, enclosed with header and footer.
 // This version accepts a custom item height.
 // The function returns true if the selection was changed. The value of currentItem will indicate the new selected item.
@@ -1354,6 +1471,7 @@ func TabItemButtonV(label string, flags TabItemFlags) bool {
 	defer labelFin()
 	return C.iggTabItemButton(labelArg, C.int(flags)) != 0
 }
+
 // (useful to reduce visual flicker on reorderable tab bars). For tab-bar: call
 // after BeginTabBar() and before Tab submissions. Otherwise call with a window name.
 func TabItemButton(label string) bool {

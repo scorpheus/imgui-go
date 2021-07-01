@@ -66,6 +66,11 @@ func IsItemToggledOpen() bool {
 	return C.iggIsItemToggledOpen() != 0
 }
 
+// IsItemToggledSelection was the last item selection state toggled? (after Selectable(), TreeNode() etc. We only returns toggle _event_ in order to handle clipping correctly)
+func IsItemToggledSelection() bool {
+	return C.iggIsItemToggledSelection() != 0
+}
+
 // IsAnyItemActive returns true if the any item is active.
 func IsAnyItemActive() bool {
 	return C.iggIsAnyItemActive() != 0

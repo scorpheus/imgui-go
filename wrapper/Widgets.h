@@ -62,6 +62,24 @@ extern float iggGetTreeNodeToLabelSpacing(void);
 extern IggBool iggCollapsingHeader(const char *label, int flags);
 
 extern IggBool iggSelectable(char const *label, IggBool selected, int flags, IggVec2 const *size);
+
+typedef void *iggMultiSelectData;
+extern IggBool iggMultiSelectDataRequestClear(iggMultiSelectData handle);
+extern IggBool iggMultiSelectDataRequestSelectAll(iggMultiSelectData handle);
+extern IggBool iggMultiSelectDataRequestSetRange(iggMultiSelectData handle);
+extern IggBool iggMultiSelectDataRangeSrcPassedBy(iggMultiSelectData handle);
+extern void iggMultiSelectDataSetRangeSrcPassedBy(iggMultiSelectData handle, IggBool v);
+extern IggBool iggMultiSelectDataRangeValue(iggMultiSelectData handle);
+extern uintptr_t iggMultiSelectDataRangeSrc(iggMultiSelectData handle);
+extern uintptr_t iggMultiSelectDataRangeDst(iggMultiSelectData handle);
+extern int iggMultiSelectDataRangeDirection(iggMultiSelectData handle);
+
+extern iggMultiSelectData iggBeginMultiSelect(int flags, uintptr_t range_ref, IggBool range_ref_is_selected);
+extern iggMultiSelectData iggEndMultiSelect();
+extern void iggSetNextItemSelectionData(uintptr_t item_data);
+extern void iggMultiSelectItemHeader(unsigned int id, IggBool *p_selected);
+extern void iggMultiSelectItemFooter(unsigned int id, IggBool *p_selected, IggBool *p_pressed);
+
 extern IggBool iggBeginListBox(char const *label, IggVec2 const *size);
 extern void iggEndListBox();
 extern IggBool iggListBox(char const *label, int *currentItem, char const *const items[], int itemCount, int heightItems);

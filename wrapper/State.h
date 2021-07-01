@@ -16,6 +16,7 @@ extern IggBool iggIsItemActivated();
 extern IggBool iggIsItemDeactivated();
 extern IggBool iggIsItemDeactivatedAfterEdit();
 extern IggBool iggIsItemToggledOpen();
+extern IggBool iggIsItemToggledSelection();
 
 extern void iggSetItemAllowOverlap();
 
